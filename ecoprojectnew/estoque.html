@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Estoque - ReMarket</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .loading-spinner {
+            border: 4px solid #e5e7eb;
+            border-top: 4px solid #2563eb;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        .error {
+            border-color: #dc2626;
+        }
+        .error-message {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            cursor: move;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        .card.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+/* Adicione estas classes de estilo */
+        .modal {
+            display: none;
+            background-color: rgba(0, 0, 0, 0.5);
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transform: scale(0.95);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal.show .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <aside id="sidebar" class="bg-green-800 text-white w-64 fixed top-0 left-0 h-full shadow-lg z-40 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
+        <div class="flex items-center justify-center space-x-3 p-4 border-b border-green-700 h-20">
+            <span class="text-3xl">♻️</span>
+            <h1 class="text-2xl font-semibold text-white">ReMarket</h1>
+        </div>
+        <nav class="flex flex-col p-4 space-y-2">
+            <a href="#" class="flex items-center space-x-3 text-white bg-green-700 px-3 py-2.5 rounded-md transition font-medium">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <span>Gerenciar Estoque</span>
+            </a>
+            <a href="#" class="flex items-center space-x-3 text-gray-200 hover:text-white hover:bg-green-700 px-3 py-2.5 rounded-md transition font-medium">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                <span>Dashboard</span>
+            </a>
+        </nav>
+    </aside>
+
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-60 z-30 hidden lg:hidden"></div>
+
+    <div class="flex-1 flex flex-col lg:ml-64">
+        <header class="bg-white shadow-md py-4 lg:hidden fixed top-0 left-0 right-0 z-20">
+            <div class="container mx-auto flex justify-between items-center px-4 sm:px-6">
+                <div class="flex items-center space-x-3">
+                    <span class="text-2xl">♻️</span>
+                    <h1 class="text-xl sm:text-2xl font-semibold text-green-700">ReMarket</h1>
+                </div>
+                <button id="sidebar-toggle" class="text-gray-600 hover:text-green-600 focus:outline-none" aria-label="Alternar barra lateral">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-grow p-4 sm:p-6 lg:pt-6 pt-20">
+            <div class="container mx-auto max-w-5xl">
+                <div class="bg-white p-8 rounded-2xl shadow-xl mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Adicionar Novo Produto</h2>
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div>
+                            <input id="resourceName" type="text" placeholder="Nome do Produto" class="w-full border-2 border-gray-200 p-3 rounded-lg focus:outline-none focus:border-blue-600 transition-colors" aria-label="Nome do Produto">
+                            <p id="resourceNameError" class="error-message hidden">Por favor, insira o nome do produto.</p>
+                        </div>
+                        <div>
+                            <input id="quantity" type="number" placeholder="Quantidade" class="w-full border-2 border-gray-200 p-3 rounded-lg focus:outline-none focus:border-blue-600 transition-colors" aria-label="Quantidade">
+                            <p id="quantityError" class="error-message hidden">Por favor, insira uma quantidade válida.</p>
+                        </div>
+                        <div>
+                            <input id="category" type="text" placeholder="Categoria" class="w-full border-2 border-gray-200 p-3 rounded-lg focus:outline-none focus:border-blue-600 transition-colors" aria-label="Categoria">
+                            <p id="categoryError" class="error-message hidden">Por favor, insira uma categoria.</p>
+                        </div>
+                        <div>
+                            <input id="location" type="text" placeholder="Localização (Ex: Armazém A)" class="w-full border-2 border-gray-200 p-3 rounded-lg focus:outline-none focus:border-blue-600 transition-colors" aria-label="Localização">
+                            <p id="locationError" class="error-message hidden">Por favor, insira a localização.</p>
+                        </div>
+                        <div>
+                            <input id="aisle" type="text" placeholder="Corredor (Ex: 05)" class="w-full border-2 border-gray-200 p-3 rounded-lg focus:outline-none focus:border-blue-600 transition-colors" aria-label="Corredor">
+                            <p id="aisleError" class="error-message hidden">Por favor, insira o corredor.</p>
+                        </div>
+                        <div>
+                            <input id="shelf" type="text" placeholder="Prateleira (Ex: C-2)" class="w-full border-2 border-gray-200 p-3 rounded-lg focus:outline-none focus:border-blue-600 transition-colors" aria-label="Prateleira">
+                            <p id="shelfError" class="error-message hidden">Por favor, insira a prateleira.</p>
+                        </div>
+                        <div>
+                            <label for="entryDate" class="block text-sm font-medium text-gray-500 mb-1">Data de Entrada</label>
+                            <input id="entryDate" type="date" class="w-full border-2 border-gray-200 p-3 rounded-lg focus:outline-none focus:border-blue-600 transition-colors" aria-label="Data de Entrada">
+                        </div>
+                        <div>
+                            <label for="departureDate" class="block text-sm font-medium text-gray-500 mb-1">Previsão de Saída</label>
+                            <input id="departureDate" type="date" class="w-full border-2 border-gray-200 p-3 rounded-lg focus:outline-none focus:border-blue-600 transition-colors" aria-label="Previsão de Saída">
+                        </div>
+                    </div>
+                    <div class="mt-6 flex items-center gap-4">
+                        <button id="addResourceBtn" class="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto flex items-center justify-center gap-2">
+                            <span>Adicionar Produto</span>
+                            <div id="loadingSpinner" class="loading-spinner hidden"></div>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="cardView" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" ondragover="event.preventDefault()"></div>
+            </div>
+        </main>
+    </div>
+
+   <div id="editModal" class="modal fixed inset-0 items-center justify-center z-50 p-4">
+        <div id="editModalContent" class="modal-content bg-white p-6 sm:p-8 rounded-2xl shadow-2xl max-w-2xl w-full">
+            
+            <div class="flex items-center justify-between pb-4 border-b border-gray-200">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-100 p-2 rounded-lg">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    </div>
+                    <h2 class="text-xl font-semibold text-gray-800">Editar Produto</h2>
+                </div>
+                <button id="closeModalBtn" class="text-gray-400 hover:text-gray-600 rounded-full p-1 transition-colors focus:outline-none">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                </button>
+            </div>
+
+            <div class="py-6">
+                <div class="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
+                    <div class="sm:col-span-2">
+                        <label for="editName" class="block text-sm font-medium text-gray-700 mb-1">Nome do Produto</label>
+                        <input id="editName" type="text" class="w-full border-2 border-gray-200 p-3 rounded-lg focus:outline-none focus:border-blue-600 transition-colors">
+                    </div>
+                    <div>
+                        <label for="editQuantity" class="block text-sm font-medium text-gray-700 mb-1">Quantidade</label>
+                        <input id="editQuantity" type="number" class="w-full border-2 border-gray-200 p-3 rounded-lg focus:outline-none focus:border-blue-600 transition-colors">
+                    </div>
+                    <div>
+                        <label for="editCategory" class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                        <input id="editCategory" type="text" class="w-full border-2 border-gray-200 p-3 rounded-lg focus:outline-none focus:border-blue-600 transition-colors">
+                    </div>
+                    <div>
+                        <label for="editLocation" class="block text-sm font-medium text-gray-700 mb-1">Localização</label>
+                        <input id="editLocation" type="text" class="w-full border-2 border-gray-200 p-3 rounded-lg focus:outline-none focus:border-blue-600 transition-colors">
+                    </div>
+                    <div>
+                        <label for="editAisle" class="block text-sm font-medium text-gray-700 mb-1">Corredor</label>
+                        <input id="editAisle" type="text" class="w-full border-2 border-gray-200 p-3 rounded-lg focus:outline-none focus:border-blue-600 transition-colors">
+                    </div>
+                    <div>
+                        <label for="editShelf" class="block text-sm font-medium text-gray-700 mb-1">Prateleira</label>
+                        <input id="editShelf" type="text" class="w-full border-2 border-gray-200 p-3 rounded-lg focus:outline-none focus:border-blue-600 transition-colors">
+                    </div>
+                    <div>
+                        <label for="editEntryDate" class="block text-sm font-medium text-gray-700 mb-1">Data de Entrada</label>
+                        <input id="editEntryDate" type="date" class="w-full border-2 border-gray-200 p-3 rounded-lg focus:outline-none focus:border-blue-600 transition-colors">
+                    </div>
+                     <div>
+                        <label for="editDepartureDate" class="block text-sm font-medium text-gray-700 mb-1">Previsão de Saída</label>
+                        <input id="editDepartureDate" type="date" class="w-full border-2 border-gray-200 p-3 rounded-lg focus:outline-none focus:border-blue-600 transition-colors">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-4 pt-4 border-t border-gray-200">
+                <button id="cancelEditBtn" class="bg-gray-200 text-gray-700 px-5 py-2.5 rounded-lg hover:bg-gray-300 transition-colors font-semibold text-sm">Cancelar</button>
+                <button id="saveEditBtn" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-semibold text-sm flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                    <span>Salvar Alterações</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCexikls640kZgxsknXUQpHZiNEPwRf4xg",
+            authDomain: "encurta-c3642.firebaseapp.com",
+            projectId: "encurta-c3642",
+            storageBucket: "encurta-c3642.appspot.com",
+            messagingSenderId: "365232410104",
+            appId: "1:365232410104:web:d67b449427153593ec5a0d",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        signInAnonymously(auth).catch(error => console.error("Erro na autenticação anônima:", error));
+
+        // --- MANIPULAÇÃO DA UI ---
+        const sidebar = document.getElementById("sidebar");
+        const sidebarOverlay = document.getElementById("sidebar-overlay");
+        const sidebarToggle = document.getElementById("sidebar-toggle");
+
+        sidebarToggle.addEventListener("click", () => {
+            sidebar.classList.toggle("-translate-x-full");
+            sidebarOverlay.classList.toggle("hidden");
+        });
+        sidebarOverlay.addEventListener("click", () => {
+            sidebar.classList.add("-translate-x-full");
+            sidebarOverlay.classList.add("hidden");
+        });
+        
+        const addResourceBtn = document.getElementById("addResourceBtn");
+        const loadingSpinner = document.getElementById("loadingSpinner");
+        
+        // --- ADICIONAR PRODUTO ---
+        addResourceBtn.addEventListener("click", async () => {
+            const inputs = {
+                name: document.getElementById("resourceName"),
+                quantity: document.getElementById("quantity"),
+                category: document.getElementById("category"),
+                location: document.getElementById("location"),
+                aisle: document.getElementById("aisle"),
+                shelf: document.getElementById("shelf"),
+                entryDate: document.getElementById("entryDate"),
+                departureDate: document.getElementById("departureDate"),
+            };
+            const errors = {
+                name: document.getElementById("resourceNameError"),
+                quantity: document.getElementById("quantityError"),
+                category: document.getElementById("categoryError"),
+                location: document.getElementById("locationError"),
+                aisle: document.getElementById("aisleError"),
+                shelf: document.getElementById("shelfError"),
+            };
+
+            let hasError = false;
+            for (const key in errors) {
+                inputs[key].classList.remove("error");
+                errors[key].classList.add("hidden");
+                if (!inputs[key].value) {
+                    inputs[key].classList.add("error");
+                    errors[key].classList.remove("hidden");
+                    hasError = true;
+                }
+            }
+            if (hasError) return;
+            
+            loadingSpinner.classList.remove("hidden");
+            addResourceBtn.disabled = true;
+
+            try {
+                await addDoc(collection(db, "resources"), {
+                    name: inputs.name.value.trim(),
+                    quantity: parseInt(inputs.quantity.value),
+                    category: inputs.category.value.trim(),
+                    location: inputs.location.value.trim(),
+                    aisle: inputs.aisle.value.trim(),
+                    shelf: inputs.shelf.value.trim(),
+                    entryDate: inputs.entryDate.value,
+                    departureDate: inputs.departureDate.value,
+                    createdAt: new Date()
+                });
+                for (const key in inputs) {
+                    inputs[key].value = "";
+                }
+                alert("Produto adicionado com sucesso! ✅");
+            } catch (error) {
+                console.error("Erro ao adicionar produto:", error);
+                alert(`Erro ao adicionar produto: ${error.message}`);
+            } finally {
+                loadingSpinner.classList.add("hidden");
+                addResourceBtn.disabled = false;
+            }
+        });
+
+// --- EXIBIR PRODUTOS (COM LAYOUT FINAL CORRIGIDO) ---
+        const cardContainer = document.getElementById("cardView");
+        const formatDateForDisplay = (dateString) => {
+            if (!dateString) return 'Não definida';
+            const [year, month, day] = dateString.split('-');
+            return `${day}/${month}/${year}`;
+        };
+
+        const q = query(collection(db, "resources"), orderBy("createdAt", "desc"));
+        onSnapshot(q, (snapshot) => {
+            cardContainer.innerHTML = "";
+            if (snapshot.empty) {
+                cardContainer.innerHTML = `<p class="text-gray-500 col-span-full text-center">Nenhum produto cadastrado ainda.</p>`;
+                return;
+            }
+
+            snapshot.forEach((doc) => {
+                const resource = doc.data();
+                const id = doc.id;
+
+                // --- Lógica para Estilo Dinâmico ---
+                let borderColorClass = 'border-green-500';
+                let quantityClass = 'text-gray-900 font-medium';
+                let quantityIconSVG = `<svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-14L4 7m0 10l8 4m-8-4v-4m16 4v-4" /></svg>`;
+
+                const quantity = parseInt(resource.quantity);
+                if (quantity > 0 && quantity <= 10) {
+                    borderColorClass = 'border-yellow-500';
+                    quantityClass = 'text-yellow-600 font-bold';
+                    quantityIconSVG = `<svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.21 3.03-1.742 3.03H4.42c-1.532 0-2.492-1.696-1.742-3.03l5.58-9.92zM10 13a1 1 0 110-2 1 1 0 010 2zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>`;
+                } else if (quantity === 0) {
+                    borderColorClass = 'border-red-600';
+                    quantityClass = 'text-red-600 font-bold';
+                    quantityIconSVG = `<svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>`;
+                }
+                
+                const card = document.createElement("div");
+                card.className = `bg-white rounded-xl shadow-lg card border-t-4 ${borderColorClass}`;
+                card.draggable = true;
+                card.setAttribute("data-id", id);
+                
+                for (const key in resource) {
+                    if (resource.hasOwnProperty(key)) {
+                         card.setAttribute(`data-${key}`, resource[key] || '');
+                    }
+                }
+                
+                // --- HTML FINAL DO CARD ---
+                card.innerHTML = `
+                    <div class="p-5">
+                        <div class="flex justify-between items-start gap-3">
+                            <h3 class="text-lg font-bold text-gray-800 leading-tight">${resource.name}</h3>
+                            <span class="flex-shrink-0 bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full">${resource.category}</span>
+                        </div>
+
+                        <div class="mt-4 space-y-3 text-sm">
+                            <div class="grid grid-cols-2 gap-4 items-start">
+                                <div class="flex items-center gap-2 text-gray-500">
+                                    ${quantityIconSVG}
+                                    <span>Quantidade</span>
+                                </div>
+                                <div class="text-left font-medium ${quantityClass}">${resource.quantity}</div>
+                            </div>
+                            
+<!-- LOCAL -->
+<div class="grid grid-cols-2 gap-4 items-start">
+  <div class="flex items-center gap-2 text-gray-500">
+    <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+    <div class="text-sm">Local</div>
+  </div>
+  <div class="text-sm text-gray-900 font-medium">${resource.location}</div>
+</div>
+
+<!-- CORREDOR -->
+<div class="grid grid-cols-2 gap-4 items-start">
+  <div class="flex items-center gap-2 text-gray-500">
+    <svg class="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+    <div class="text-sm">Corredor</div>
+  </div>
+  <div class="text-sm text-gray-900 font-medium">${resource.aisle}</div>
+</div>
+
+<!-- PRATELEIRA -->
+<div class="grid grid-cols-2 gap-4 items-start">
+  <div class="flex items-center gap-2 text-gray-500">
+    <svg class="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M3 10h18M3 6h18M3 14h18M3 18h18" />
+    </svg>
+    <div class="text-sm">Prateleira</div>
+  </div>
+  <div class="text-sm text-gray-900 font-medium">${resource.shelf}</div>
+</div>
+
+
+                            <div class="grid grid-cols-2 gap-4 items-start">
+                                <div class="flex items-center gap-2 text-gray-500">
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
+                                    <span>Entrada</span>
+                                </div>
+                                <div class="text-left font-medium text-gray-900">${formatDateForDisplay(resource.entryDate)}</div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4 items-start">
+                                <div class="flex items-center gap-2 text-gray-500">
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16l-4-4m0 0l4-4m-4 4h14M8 12h1M12 12h1M16 12h1M21 12c0 4.418-4.03 8-9 8s-9-3.582-9-8 4.03-8 9-8 9 3.582 9 8z" /></svg>
+                                    <span>Prev. Saída</span>
+                                </div>
+                                <div class="text-left font-medium text-gray-900">${formatDateForDisplay(resource.departureDate)}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 px-5 py-3 flex justify-end gap-2 rounded-b-xl">
+                        <button class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-md hover:bg-yellow-200 transition-colors text-xs font-bold edit-btn">Editar</button>
+                        <button class="bg-red-100 text-red-800 px-3 py-1 rounded-md hover:bg-red-200 transition-colors text-xs font-bold delete-btn">Excluir</button>
+                    </div>
+                `;
+                cardContainer.appendChild(card);
+            });
+        }, (error) => {
+            console.error("Erro ao carregar produtos:", error);
+            cardContainer.innerHTML = `<p class="text-red-500 col-span-full text-center">Ocorreu um erro ao carregar os produtos.</p>`;
+        });
+        // --- DELETAR E EDITAR (DELEGAÇÃO DE EVENTOS) ---
+        cardContainer.addEventListener('click', (e) => {
+            const target = e.target;
+            const card = target.closest('.card');
+            if (!card) return;
+            const id = card.getAttribute('data-id');
+
+            // Deletar Produto
+            if (target.classList.contains('delete-btn')) {
+                if (confirm(`Tem certeza que deseja excluir o produto "${card.getAttribute('data-name')}"?`)) {
+                    deleteDoc(doc(db, "resources", id))
+                        .then(() => alert("Produto excluído com sucesso! 🗑️"))
+                        .catch(error => alert(`Erro ao excluir produto: ${error.message}`));
+                }
+            }
+
+            // Abrir Modal de Edição
+            if (target.classList.contains('edit-btn')) {
+                const modal = document.getElementById("editModal");
+                const inputs = {
+                    name: document.getElementById("editName"),
+                    quantity: document.getElementById("editQuantity"),
+                    category: document.getElementById("editCategory"),
+                    location: document.getElementById("editLocation"),
+                    aisle: document.getElementById("editAisle"),
+                    shelf: document.getElementById("editShelf"),
+                    entryDate: document.getElementById("editEntryDate"),
+                    departureDate: document.getElementById("editDepartureDate"),
+                };
+                
+                // Preenche o modal usando os data attributes
+                for (const key in inputs) {
+                    inputs[key].value = card.getAttribute(`data-${key}`) || '';
+                }
+
+                modal.classList.add("show");
+
+                // Salvar alterações
+                document.getElementById("saveEditBtn").onclick = async () => {
+                    const updatedData = {};
+                    for (const key in inputs) {
+                        updatedData[key] = inputs[key].value;
+                    }
+                    updatedData.quantity = parseInt(updatedData.quantity);
+
+                    try {
+                        await updateDoc(doc(db, "resources", id), updatedData);
+                        alert("Produto atualizado com sucesso! ✨");
+                        modal.classList.remove("show");
+                    } catch (error) {
+                        console.error("Erro ao atualizar produto:", error);
+                        alert(`Erro ao atualizar produto: ${error.message}`);
+                    }
+                };
+            }
+        });
+
+        // Fechar modal
+        document.getElementById("cancelEditBtn").addEventListener("click", () => {
+            document.getElementById("editModal").classList.remove("show");
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Detalhes do Produto</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCexikls640kZgxsknXUQpHZiNEPwRf4xg",
+      authDomain: "encurta-c3642.firebaseapp.com",
+      projectId: "encurta-c3642",
+      storageBucket: "encurta-c3642.appspot.com",
+      messagingSenderId: "365232410104",
+      appId: "1:365232410104:web:d67b449427153593ec5a0d",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    let currentUser = null;
+
+    function createImageCarousel(images, productName) {
+      if (!images || images.length === 0) {
+        return `<img src="https://placehold.co/600x400/e2e8f0/4a5568?text=Sem+Imagem" alt="Imagem indisponível para ${productName}" class="w-full h-64 object-cover rounded-lg" />`;
+      }
+      if (images.length === 1) {
+        return `<img src="${images[0]}" alt="Imagem de ${productName}" class="w-full h-64 object-cover rounded-lg" onerror="this.onerror=null;this.src='https://placehold.co/600x400?text=Imagem+Indisponível';" />`;
+      }
+
+      const carouselId = `carousel-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      const slides = images.map((img, i) => `
+        <div class="carousel-slide absolute inset-0 w-full h-full opacity-0 ${i === 0 ? 'opacity-100' : ''}" data-index="${i}">
+          <img src="${img}" alt="Imagem ${i + 1} de ${productName}" class="w-full h-64 object-cover rounded-lg" onerror="this.onerror=null;this.src='https://placehold.co/600x400?text=Imagem+Indisponível';" />
+        </div>`).join('');
+      const counter = `<div class="carousel-counter absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-md z-10">1 / ${images.length}</div>`;
+      const controls = `
+        <button class="carousel-prev absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-40 text-white p-1 rounded-full hover:bg-opacity-60 focus:outline-none z-10" aria-label="Anterior">&lt;</button>
+        <button class="carousel-next absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-40 text-white p-1 rounded-full hover:bg-opacity-60 focus:outline-none z-10" aria-label="Próximo">&gt;</button>`;
+      const container = document.createElement("div");
+      container.id = carouselId;
+      container.className = "relative overflow-hidden rounded-lg h-64";
+      container.innerHTML = slides + controls + counter;
+      setTimeout(() => {
+        const carousel = document.getElementById(carouselId);
+        if (!carousel) return;
+        const slides = carousel.querySelectorAll(".carousel-slide");
+        const counterEl = carousel.querySelector(".carousel-counter");
+        let currentIndex = 0;
+        function showSlide(index) {
+          if (counterEl) counterEl.textContent = `${index + 1} / ${slides.length}`;
+          slides.forEach((slide, i) => {
+            slide.classList.toggle('opacity-100', i === index);
+            slide.classList.toggle('opacity-0', i !== index);
+          });
+          currentIndex = index;
+        }
+        carousel.querySelector(".carousel-prev").addEventListener("click", () => {
+          showSlide((currentIndex - 1 + slides.length) % slides.length);
+        });
+        carousel.querySelector(".carousel-next").addEventListener("click", () => {
+          showSlide((currentIndex + 1) % slides.length);
+        });
+      }, 0);
+      return container.outerHTML;
+    }
+
+    async function registrarInteresse(produto) {
+      if (!currentUser) {
+        alert("Você precisa estar logado para demonstrar interesse.");
+        return;
+      }
+      try {
+        await addDoc(collection(db, "interesses"), {
+          produtoId: produto.id,
+          compradorId: currentUser.uid,
+          vendedorId: produto.usuarioId || null,
+          nomeProduto: produto.nome || "Produto",
+          timestamp: serverTimestamp()
+        });
+        alert("Interesse registrado com sucesso!");
+      } catch (e) {
+        console.error("Erro ao registrar interesse:", e);
+        alert("Erro ao registrar interesse. Tente novamente.");
+      }
+    }
+
+    async function loadProduct() {
+      const params = new URLSearchParams(window.location.search);
+      const productId = params.get('id');
+      const productContainer = document.getElementById('product-container');
+      const productLoader = document.getElementById('product-loader');
+
+      if (!productId) {
+        productContainer.innerHTML = `<p class="text-red-500 text-center">Produto não encontrado.</p>`;
+        return;
+      }
+
+      try {
+        const productRef = doc(db, "produtos", productId);
+        const productSnap = await getDoc(productRef);
+
+        if (!productSnap.exists()) {
+          productContainer.innerHTML = `<p class="text-red-500 text-center">Produto não encontrado.</p>`;
+          productLoader.style.display = 'none';
+          return;
+        }
+
+        const p = { id: productSnap.id, ...productSnap.data() };
+        const imagens = Array.isArray(p.imagens) ? p.imagens.filter(Boolean) : (p.imagem ? [p.imagem] : []);
+        const userName = p.userName || "Usuário Anônimo";
+        const precoFormatado = (p.valor && p.valor > 0) ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.valor) : 'A combinar';
+        const descricao = p.descricao || "Sem descrição";
+        const tipoTransacao = p.tipoTransacao || "venda";
+
+        productContainer.innerHTML = `
+          <div class="bg-white rounded-xl shadow-md border border-gray-100 p-4">
+            <div class="mb-4">
+              ${createImageCarousel(imagens, p.nome)}
+            </div>
+            <h2 class="text-xl font-bold text-gray-800 mb-3">${p.nome || "Sem nome"}</h2>
+            <div class="mb-4 text-center">
+              <p class="text-3xl font-bold text-green-700">${precoFormatado}</p>
+            </div>
+            <div class="flex flex-wrap gap-2 text-xs font-medium text-gray-600 mb-4">
+              <span class="bg-gray-100 px-2 py-1 rounded-full">${p.categoria || "Sem categoria"}</span>
+              <span class="bg-gray-100 px-2 py-1 rounded-full">${tipoTransacao === 'aluguel' ? 'Aluguel' : 'Venda'}</span>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3 text-xs text-gray-700 space-y-2 border border-gray-100 mb-4">
+              <p><span class="font-semibold text-gray-800">Descrição:</span> ${descricao}</p>
+              <p><span class="font-semibold text-gray-800">Quantidade:</span> ${p.quantidade || "1"}</p>
+              <p><span class="font-semibold text-gray-800">Endereço:</span> ${p.endereco || "Não informado"}</p>
+              <p><span class="font-semibold text-gray-800">Telefone:</span> ${p.telefone || "Não informado"}</p>
+              <p><span class="font-semibold text-gray-800">Vendedor:</span> ${userName}</p>
+            </div>
+            <div class="flex flex-col gap-2">
+              <button onclick="iniciarChat('${p.telefone || ''}', '${userName}', '${p.nome}', '${p.usuarioId || ''}', '${p.id}')"
+                      class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm shadow ${!p.usuarioId ? 'opacity-50 cursor-not-allowed' : ''}"
+                      ${!p.usuarioId ? 'disabled' : ''}>
+                Chamar no Chat
+              </button>
+
+            </div>
+          </div>
+        `;
+
+        productLoader.style.display = 'none';
+      } catch (e) {
+        console.error("Erro ao carregar produto:", e);
+        productContainer.innerHTML = `<p class="text-red-500 text-center">Erro ao carregar o produto.</p>`;
+        productLoader.style.display = 'none';
+      }
+    }
+
+    window.iniciarChat = function (telefone, nome, produto, uidDestinatario, produtoId) {
+      if (!uidDestinatario) return alert('Não é possível iniciar o chat: informações do anunciante incompletas.');
+      if (!currentUser) return alert('Você precisa estar logado para iniciar um chat.');
+      if (uidDestinatario === currentUser.uid) return alert('Você não pode iniciar um chat consigo mesmo.');
+      const params = new URLSearchParams({ nome, produto, para: uidDestinatario, produtoId });
+      window.open(`chat.html?${params.toString()}`, '_blank');
+    };
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user || (await signInAnonymously(auth)).user;
+      loadProduct();
+    });
+  </script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+  <div id="product-loader" class="flex justify-center items-center">
+    <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-green-600"></div>
+  </div>
+  <div id="product-container" class="max-w-lg w-full"></div>
+</body>
+</html>

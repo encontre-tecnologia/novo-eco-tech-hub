@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ReMarket Chat - Eco Tech Hub</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            darkbg: "#18181b",
+            grayx: {
+              50: "#f3f4f6",
+              100: "#e5e7eb",
+              200: "#d1d5db",
+              300: "#9ca3af",
+              400: "#6b7280",
+              500: "#4b5563",
+              600: "#374151",
+              700: "#23272F",
+              800: "#18181b",
+              900: "#111112"
+            },
+            accent: "#38bdf8"
+          },
+          boxShadow: {
+            soft: '0 10px 40px -10px rgba(0,0,0,0.23)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    #chat-container::-webkit-scrollbar { width: 6px; }
+    #chat-container::-webkit-scrollbar-track { background: #23272f; }
+    #chat-container::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 10px; }
+    .break-words { word-break: break-word; overflow-wrap: break-word; }
+    .reply-action-btn { margin-left: 8px; align-self: center; background: none; border: none; cursor: pointer; display: flex; align-items: center; opacity: 1; }
+    .status-online-badge { display: inline-flex; align-items: center; margin-left: 5px; background: #22c55e; color: #fff; font-weight: bold; border-radius: 9999px; padding: 2px 12px 2px 6px; font-size: 13px; box-shadow: 0 0 0 2px #22c55e20; animation: pulseOnline 1.25s infinite; gap: 6px; }
+    .status-online-dot { width: 10px; height: 10px; background: #fff; border-radius: 999px; }
+    @keyframes pulseOnline { 0% { box-shadow: 0 0 0 0 #22c55e60; } 70% { box-shadow: 0 0 0 5px #22c55e10; } 100% { box-shadow: 0 0 0 0 #22c55e60; } }
+    @keyframes fadein { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: none; } }
+    .animate-fadein { animation: fadein 0.23s cubic-bezier(.16,.93,.54,1.14);}
+    #header-avatar { object-fit: cover; }
+    @media (max-width: 767px) {
+      #mobile-navbar.visible { display: flex !important; }
+    }
+  </style>
+</head>
+<body class="bg-white dark:bg-darkbg min-h-screen text-grayx-900 dark:text-grayx-50 flex flex-col">
+
+  <p id="error-message" class="error text-center text-red-500 hidden mt-4"></p>
+  
+  <!-- HEADER -->
+  <header class="w-full fixed top-0 left-0 z-50 bg-white/90 dark:bg-grayx-900/95 shadow-sm border-b border-grayx-200 dark:border-grayx-700 backdrop-blur-xl">
+    <nav class="container mx-auto max-w-7xl px-4 flex items-center justify-between h-16">
+      <div class="flex items-center gap-3">
+        <span class="text-xl">🌐</span>
+        <span class="text-xl font-bold tracking-wider text-grayx-900 dark:text-grayx-50 ml-2">Eco Tech Hub</span>
+      </div>
+      <div class="hidden md:flex gap-2 flex-wrap items-center">
+        <a href="index.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition font-semibold">Home</a>
+        <a href="dashboard.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Dashboard</a>
+        <a href="register.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Cadastrar Recurso</a>
+        <a href="profile.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Perfil</a>
+        <a href="conversas.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Minhas Conversas</a>
+      </div>
+      <div class="flex items-center ml-auto md:ml-0 gap-2">
+        <a href="profile.html" class="flex-shrink-0" title="Perfil">
+          <img id="header-avatar" class="w-9 h-9 rounded-full bg-grayx-200 dark:bg-grayx-700 border" src="https://ui-avatars.com/api/?background=eee&color=23272F&name=User" alt="Usuário" referrerpolicy="no-referrer">
+        </a>
+        <button id="theme-toggle" class="p-2 rounded hover:bg-grayx-200 dark:hover:bg-grayx-700 text-grayx-400 dark:text-grayx-300" title="Mudar tema">
+          <i class="fa-solid fa-sun dark:hidden"></i>
+          <i class="fa-solid fa-moon hidden dark:inline"></i>
+        </button>
+        <button id="mobile-menu-toggle" class="md:hidden p-2 text-grayx-600 dark:text-grayx-300 hover:bg-grayx-200 dark:hover:bg-grayx-700 rounded ml-1" title="Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </nav>
+    <div id="mobile-navbar" class="fixed top-16 left-0 w-full bg-white dark:bg-grayx-900 border-b border-grayx-200 dark:border-grayx-700 shadow-xl z-40 flex-col gap-2 px-2 py-4 hidden">
+      <a href="index.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Home</a>
+      <a href="dashboard.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Dashboard</a>
+      <a href="register.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Cadastrar Recurso</a>
+      <a href="profile.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Perfil</a>
+      <a href="conversas.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Minhas Conversas</a>
+    </div>
+  </header>
+
+  <main class="flex-1 flex flex-col items-center justify-center pt-20 pb-6 w-full px-4">
+    <div class="w-full max-w-2xl bg-white dark:bg-grayx-800 rounded-2xl shadow-xl border border-gray-200 dark:border-grayx-700 flex flex-col" style="height: calc(100vh - 120px); max-height: 700px;">
+      <div class="bg-gray-50 dark:bg-grayx-900/50 px-4 py-3 rounded-t-2xl border-b border-gray-200 dark:border-grayx-700 flex items-center gap-3 justify-between">
+        <div class="flex items-center gap-3 min-w-0">
+          <img id="user-avatar" class="w-12 h-12 rounded-full object-cover border-2 border-white dark:border-grayx-600 flex-shrink-0" src="" alt="Outro usuário" style="display: none;">
+          <div class="flex flex-col min-w-0">
+            <div class="flex items-center gap-2">
+              <span id="chat-user-name" class="text-lg font-bold text-gray-800 dark:text-grayx-100 truncate">Conectando ao chat...</span>
+              <span id="reconnect-status" class="text-xs font-bold ml-2 text-yellow-500"></span>
+              <span id="chat-status" class="text-xs font-semibold"></span>
+            </div>
+            <span id="chat-product-name" class="text-sm font-medium text-accent dark:text-accent truncate">Carregando...</span>
+            <div id="typing-indicator" class="text-xs text-gray-500 dark:text-grayx-400 mt-1 hidden">Digitando...</div>
+          </div>
+        </div>
+        <button id="close-chat-btn" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-full transition shadow flex items-center gap-2" title="Encerrar conversa">
+          <i class="fa-solid fa-xmark"></i>
+          <span class="hidden sm:inline">Encerrar</span>
+        </button>
+      </div>
+      <div id="chat-container" class="flex-1 p-4 overflow-y-auto flex flex-col gap-4 w-full bg-gray-50 dark:bg-grayx-900">
+        <p id="loading-placeholder" class="text-gray-500 text-center m-auto">Carregando mensagens...</p>
+      </div>
+      <div id="reply-box" style="display:none;" class="p-2 border-t border-gray-200 dark:border-grayx-700 bg-gray-100 dark:bg-grayx-700/50 flex items-center gap-2">
+        <div class="flex-1 min-w-0">
+          <span id="reply-author" class="block text-xs font-bold text-accent dark:text-accent"></span>
+          <span id="reply-preview" class="block text-sm mt-1 text-gray-700 dark:text-grayx-100 break-words truncate"></span>
+        </div>
+        <button id="cancel-reply" class="text-red-500 text-lg hover:text-red-700 transition">&times;</button>
+      </div>
+      <div id="system-message" class="text-center text-sm font-bold text-accent bg-accent/10 dark:bg-accent/20 p-2 rounded mb-2" style="display: none;"></div>
+      <div id="mensagem-box" class="p-3 border-t border-gray-200 dark:border-grayx-700 bg-white dark:bg-grayx-800 rounded-b-2xl">
+        <div class="relative flex items-center">
+          <input type="text" id="message-input" placeholder="Digite sua mensagem..." maxlength="500" class="w-full p-3 pr-12 border border-gray-300 dark:border-grayx-600 rounded-full bg-gray-100 dark:bg-grayx-700 focus:ring-accent focus:border-accent">
+          <button id="send-button" class="absolute right-1.5 bg-accent text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-sky-500 transition" aria-label="Enviar mensagem">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+  <!-- MODAL DELETAR -->
+  <div id="delete-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white dark:bg-grayx-900 rounded-2xl shadow-xl max-w-sm w-full p-6 border-2 border-accent flex flex-col items-center animate-fadein">
+      <div class="text-4xl text-accent mb-2"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <h2 class="font-bold text-lg text-grayx-900 dark:text-grayx-50 mb-2">Encerrar conversa</h2>
+      <p class="text-grayx-600 dark:text-grayx-300 mb-8 text-center">Tem certeza que deseja apagar <span class="font-semibold text-accent">todas as mensagens</span> e encerrar esta conversa? Esta ação não pode ser desfeita!</p>
+      <div class="flex gap-3 w-full">
+        <button id="cancel-delete-modal" class="flex-1 py-2 rounded-lg bg-grayx-200 dark:bg-grayx-700 text-grayx-700 dark:text-grayx-100 font-bold hover:bg-grayx-300 dark:hover:bg-grayx-600 transition">Cancelar</button>
+        <button id="confirm-delete-modal" class="flex-1 py-2 rounded-lg bg-red-500 text-white font-bold hover:bg-red-600 transition shadow">Sim, apagar</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Tema toggle (dark mode)
+    const themeToggle = document.getElementById("theme-toggle");
+    const root = document.documentElement;
+    const applyTheme = (mode) => {
+      if (mode === 'dark') root.classList.add('dark');
+      else root.classList.remove('dark');
+      localStorage.setItem('theme', mode);
+    };
+    const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme(savedTheme);
+    themeToggle?.addEventListener('click', () => {
+      const now = root.classList.contains('dark') ? 'light' : 'dark';
+      applyTheme(now);
+    });
+
+    // Mobile menu
+    const menuBtn = document.getElementById("mobile-menu-toggle");
+    const mobileNavbar = document.getElementById("mobile-navbar");
+    menuBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      mobileNavbar.classList.toggle("hidden");
+      mobileNavbar.classList.toggle("visible");
+    });
+    window.addEventListener('scroll', () => { mobileNavbar?.classList.add('hidden'); mobileNavbar?.classList.remove('visible'); });
+
+    // Busca do menu mobile
+    const mobileMenuSearch = document.getElementById('mobile-menu-search');
+    if (mobileMenuSearch) {
+      mobileMenuSearch.addEventListener('input', e => {
+        const term = (e.target.value || '').toLowerCase();
+        document.querySelectorAll('#mobile-navbar a').forEach(link => {
+          if (link.textContent.toLowerCase().includes(term) || link.tagName !== 'A') {
+            link.style.display = "";
+          } else {
+            link.style.display = "none";
+          }
+        });
+      });
+    }
+  </script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const firebaseConfig = {apiKey:"AIzaSyCexikls640kZgxsknXUQpHZiNEPwRf4xg",authDomain:"encurta-c3642.firebaseapp.com",projectId:"encurta-c3642",storageBucket:"encurta-c3642.appspot.com",messagingSenderId:"365232410104",appId:"1:365232410104:web:d67b449427153593ec5a0d"};
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const headerAvatar = document.getElementById("header-avatar");
+    onAuthStateChanged(auth, user => {
+      if (user && headerAvatar) {
+        if (user.photoURL) {
+          headerAvatar.src = user.photoURL;
+        } else if (user.displayName) {
+          headerAvatar.src = `https://ui-avatars.com/api/?background=eee&color=23272F&name=${user.displayName[0]}`;
+        }
+      }
+    });
+
+    // DOM references
+    const chatContainer = document.getElementById('chat-container');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const loadingPlaceholder = document.getElementById('loading-placeholder');
+    const avatar = document.getElementById('user-avatar');
+    const chatUserName = document.getElementById('chat-user-name');
+    const chatProductName = document.getElementById('chat-product-name');
+    const chatStatus = document.getElementById('chat-status');
+    const typingIndicator = document.getElementById("typing-indicator");
+    const replyBox = document.getElementById("reply-box");
+    const replyPreview = document.getElementById("reply-preview");
+    const replyAuthor = document.getElementById("reply-author");
+    const cancelReplyBtn = document.getElementById("cancel-reply");
+    const closeChatBtn = document.getElementById("close-chat-btn");
+    const reconnectStatus = document.getElementById("reconnect-status");
+    const deleteModal = document.getElementById("delete-modal");
+    const msgBox = document.getElementById("mensagem-box");
+
+    let currentUser = null;
+    let socket = null;
+    let historicoMsgs = [];
+    let replyToMsgId = null;
+    let chatId = null;
+
+    // Websocket reconexão
+    let reconnectAttempts = 0;
+    const maxReconnects = 20;
+    let reconnectTimeout = null;
+
+    function setHeaderInfo(otherUser = {}, productName = 'Conversa') {
+      const nomeOutro = (otherUser.nome && otherUser.nome.trim()) ? otherUser.nome : "Usuário";
+      const fotoOutro = (otherUser.foto && otherUser.foto.trim())
+        ? otherUser.foto
+        : `https://ui-avatars.com/api/?background=38bdf8&color=fff&name=${encodeURIComponent(nomeOutro)}`;
+      chatUserName.textContent = nomeOutro;
+      chatProductName.textContent = productName;
+      avatar.src = fotoOutro;
+      avatar.style.display = "block";
+    }
+
+    function renderMessage(msg) {
+      if (document.getElementById(msg.id)) return;
+      const isMy = msg.from === currentUser.uid;
+      const msgUserName = isMy ? "Você" : (msg.fromName || "Usuário");
+      const msgUserPhoto = isMy
+        ? (currentUser.photoURL || `https://ui-avatars.com/api/?background=38bdf8&color=fff&name=${encodeURIComponent(msgUserName)}`)
+        : (msg.fromPhotoURL && msg.fromPhotoURL.trim() !== "" ? msg.fromPhotoURL : `https://ui-avatars.com/api/?background=38bdf8&color=fff&name=${encodeURIComponent(msgUserName)}`);
+
+      const timeText = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+      const msgRow = document.createElement('div');
+      msgRow.className = "flex items-start gap-2 " + (isMy ? "justify-end" : "justify-start");
+
+      const div = document.createElement('div');
+      div.id = msg.id;
+      let replyHtml = "";
+      if (msg.replyTo) {
+        const original = historicoMsgs.find(m => m.id === msg.replyTo);
+        const replyAuthorName = original ? (original.from === currentUser.uid ? 'Você' : (original.fromName || 'Anônimo')) : 'Mensagem';
+        const replyText = original ? original.text : 'Não encontrada';
+        replyHtml = `<div class="mb-2 p-2 rounded-lg bg-black/10 dark:bg-black/20 border-l-4 border-accent/70 text-xs opacity-90 break-words">
+                      <span class="font-semibold block">${replyAuthorName}</span>
+                      <span class="block mt-1">${replyText}</span>
+                    </div>`;
+      }
+
+      div.className = isMy 
+        ? "bg-accent text-white rounded-xl rounded-br-none px-4 py-2 max-w-[80%] shadow"
+        : "bg-gray-200 dark:bg-grayx-700 rounded-xl rounded-bl-none px-4 py-2 max-w-[80%] shadow";
+      div.innerHTML = `
+        <div class="flex items-center gap-2 mb-1">
+          <img src="${msgUserPhoto}" alt="${msgUserName}" class="w-7 h-7 rounded-full object-cover border bg-white" style="display:inline-block;">
+          <span class="block text-xs font-bold ${isMy ? "text-white/80" : "text-gray-500 dark:text-grayx-400"}">${msgUserName}</span>
+        </div>
+        ${replyHtml}
+        <span class="block break-words text-base">${msg.text}</span>
+        <span class="block text-xs ${isMy ? "text-white/60" : "text-gray-400 dark:text-grayx-500"} mt-1 text-right w-full">${timeText}</span>
+      `;
+
+      msgRow.appendChild(div);
+
+      if (!isMy) {
+        const replyBtn = document.createElement("button");
+        replyBtn.innerHTML = '<i class="fa-solid fa-reply text-gray-400 hover:text-accent"></i>';
+        replyBtn.title = "Responder";
+        replyBtn.className = "reply-action-btn";
+        replyBtn.onclick = () => {
+          replyToMsgId = msg.id;
+          replyBox.style.display = "flex";
+          replyAuthor.textContent = `Respondendo a ${msg.fromName || "Anônimo"}`;
+          replyPreview.textContent = msg.text;
+          messageInput.focus();
+        };
+        msgRow.appendChild(replyBtn);
+      }
+
+      chatContainer.appendChild(msgRow);
+      if (!historicoMsgs.find(m => m.id === msg.id)) historicoMsgs.push(msg);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+    cancelReplyBtn.onclick = function() {
+      replyToMsgId = null;
+      replyBox.style.display = "none";
+    };
+
+    function showError(msg) {
+      const errorEl = document.getElementById('error-message');
+      errorEl.textContent = msg;
+      errorEl.classList.remove('hidden');
+      setTimeout(() => errorEl.classList.add('hidden'), 5000);
+    }
+
+    function setStatusOnline(val) {
+      chatStatus.innerHTML = val
+        ? `<span class="status-online-badge"><span class="status-online-dot"></span>Online</span>`
+        : `<span class="text-xs font-semibold text-gray-500">Offline</span>`;
+    }
+    function formatarDataHora(date) {
+      if (!date) return "--:--";
+      if (typeof date.toDate === 'function') date = date.toDate();
+      if (!(date instanceof Date)) date = new Date(date);
+      let hora = String(date.getHours()).padStart(2, "0");
+      let min = String(date.getMinutes()).padStart(2, "0");
+      return `${hora}:${min}`;
+    }
+
+    function connectWS(chatIdParam, userUid) {
+      chatId = chatIdParam;
+      const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+      const host = window.location.host;
+      const isLocal = host.includes('localhost') || host.includes('127.0.0.1');
+      const wsUrl = isLocal ? `ws://localhost:8080` : `${protocol}://${host}`;
+      const finalWsUrl = `${wsUrl}?chatId=${chatIdParam}&userUid=${userUid}`;
+
+      socket = new WebSocket(finalWsUrl);
+      socket.onopen = () => {
+        reconnectAttempts = 0;
+        reconnectStatus.textContent = "";
+        enableChatFields();
+      };
+      socket.onclose = () => {
+        if (reconnectAttempts < maxReconnects) {
+          reconnectAttempts++;
+          reconnectStatus.textContent = `Reconectando...  ${reconnectAttempts}/${maxReconnects}`;
+          reconnectTimeout = setTimeout(() => {
+            connectWS(chatIdParam, userUid);
+          }, 2000);
+          disableChatFields();
+        } else {
+          reconnectStatus.textContent = "❌ Falha ao reconectar. Recarregue a página.";
+          showError("Conexão perdida com o servidor. Por favor, recarregue a página.");
+          disableChatFields();
+        }
+      };
+      socket.onerror = () => { reconnectStatus.textContent = "Erro na conexão, tentando de novo..."; };
+
+      socket.onmessage = (evt) => {
+        const data = JSON.parse(evt.data);
+        switch (data.type) {
+          case 'history':
+            loadingPlaceholder.style.display = 'none';
+            chatContainer.innerHTML = '';
+            historicoMsgs = data.messages || [];
+            if (historicoMsgs.length) historicoMsgs.forEach(msg => renderMessage(msg));
+            break;
+          case 'message':
+            renderMessage(data);
+            cancelReplyBtn.click();
+            // Atualiza header com o NOME/FOTO do outro sempre que receber resposta do outro
+            if (data.from !== currentUser.uid) {
+              setHeaderInfo({ nome: data.fromName, foto: data.fromPhotoURL }, chatProductName.textContent);
+              // Opcional (update Firestore)
+              const chatRef = doc(db, "chats", chatId);
+              updateDoc(chatRef, {
+                [`usuariosInfo.${data.from}.nome`]: data.fromName,
+                [`usuariosInfo.${data.from}.foto`]: data.fromPhotoURL
+              }).catch(()=>{});
+            }
+            break;
+          case 'typing':
+            if (data.from !== currentUser.uid) typingIndicator.classList.remove('hidden');
+            break;
+          case 'stopTyping':
+            if (data.from !== currentUser.uid) typingIndicator.classList.add('hidden');
+            break;
+          case 'user_online':
+            if (data.userUid !== currentUser.uid) setStatusOnline(true);
+            break;
+          case 'user_offline':
+            if (data.userUid !== currentUser.uid) setStatusOnline(false);
+            break;
+          case 'chat_closed':
+            const systemMsg = document.getElementById('system-message');
+            let msg;
+            if (data.closedBy && data.closedBy !== currentUser.uid) {
+              const nomeFechou = data.closedByName || "Outro participante";
+              msg = `⚠️ ${nomeFechou} saiu da conversa.`;
+            } else {
+              msg = `⚠️ Você encerrou a conversa.`;
+            }
+            if (systemMsg) {
+              systemMsg.textContent = msg;
+              systemMsg.style.display = "block";
+              systemMsg.classList.add('animate-fadein');
+            }
+            disableChatFields();
+            if (deleteModal) deleteModal.classList.add("hidden");
+            setTimeout(() => {
+              systemMsg.style.transition = 'opacity 0.5s';
+              systemMsg.style.opacity = 0;
+              setTimeout(() => {
+                window.location.href = 'conversas.html';
+              }, 500);
+            }, 3000);
+            break;
+        }
+      };
+    }
+
+    function enableChatFields() {
+      messageInput.disabled = false;
+      sendButton.disabled = false;
+      closeChatBtn.disabled = false;
+      closeChatBtn.classList.remove("opacity-60", "cursor-not-allowed");
+      closeChatBtn.title = "Encerrar conversa";
+      const inputs = msgBox.querySelectorAll("input, button, textarea");
+      inputs.forEach(el => { el.disabled = false; el.classList.remove("opacity-60", "cursor-not-allowed"); });
+    }
+    function disableChatFields() {
+      messageInput.disabled = true;
+      sendButton.disabled = true;
+      closeChatBtn.disabled = true;
+      closeChatBtn.classList.add("opacity-60", "cursor-not-allowed");
+      closeChatBtn.title = "Conversa encerrada";
+      const inputs = msgBox.querySelectorAll("input, button, textarea");
+      inputs.forEach(el => { el.disabled = true; el.classList.add("opacity-60", "cursor-not-allowed"); });
+    }
+
+    closeChatBtn.onclick = () => { if (deleteModal) deleteModal.classList.remove("hidden"); };
+    document.getElementById("cancel-delete-modal").onclick = () => { if (deleteModal) deleteModal.classList.add("hidden"); };
+    document.getElementById("confirm-delete-modal").onclick = () => {
+      if (deleteModal) deleteModal.classList.add("hidden");
+      socket?.send(JSON.stringify({ type: "close_chat", fromName: currentUser.displayName || 'Usuário' }));
+    };
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user || (await signInAnonymously(auth)).user;
+      const params = new URLSearchParams(window.location.search);
+      const toId = params.get('para');
+      const productId = params.get('produtoId');
+      const productName = params.get('produto');
+      const fromId = currentUser.uid;
+
+      const paramsMissing = [];
+      if (!toId) paramsMissing.push("Destinatário da conversa");
+      if (!productId) paramsMissing.push("ID do produto");
+      if (!productName) paramsMissing.push("Nome do produto");
+
+      if (paramsMissing.length > 0) {
+        loadingPlaceholder.innerHTML = `<div class="text-center py-16 px-6 bg-white dark:bg-grayx-800 rounded-xl shadow-lg border border-transparent dark:border-accent/40">
+            <svg class="mx-auto h-20 w-20 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/>
+            </svg>
+            <h3 class="mt-6 text-2xl font-extrabold text-accent">Ops! Tá faltando informação</h3>
+            <p class="mt-4 text-lg text-grayx-400">
+              Não foi possível abrir a conversa porque falta:<br>
+              <span class="font-bold text-red-500">
+                ${paramsMissing.join('<br>')}
+              </span>
+              <br><br>
+              Volte para a lista de conversas e tente novamente.<br>
+              Se o problema persistir, atualize o cadastro ou entre em contato com o suporte.<br>
+              <span class="font-mono text-xs text-grayx-300">[Código: missing-params]</span>
+            </p>
+            <a href="conversas.html" class="inline-block mt-6 px-6 py-2 bg-accent text-white rounded-lg font-bold hover:bg-sky-500 transition">Voltar para Minhas Conversas</a>
+          </div>`;
+        return showError('Faltam informações para abrir este chat: ' + paramsMissing.join(', '));
+      }
+
+      // Pega info do outro user
+      const currentUserInfo = {
+        nome: currentUser.displayName || 'Usuário Anônimo',
+        foto: currentUser.photoURL || ''
+      };
+      const otherUserRef = doc(db, "usuarios", toId);
+      let otherUserInfo = { nome: "Usuário", foto: "" };
+      try {
+        const otherUserDoc = await getDoc(otherUserRef);
+        if (otherUserDoc.exists()) {
+          const d = otherUserDoc.data();
+          otherUserInfo = { nome: d.nome || "Usuário", foto: d.foto || "" };
+        }
+      } catch (e) { otherUserInfo = { nome: "Usuário", foto: "" }; }
+
+      // Endpoint correto
+      const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
+      const host = window.location.host;
+      const isLocal = host.includes('localhost') || host.includes('127.0.0.1');
+      const apiUrl = isLocal ? `http://localhost:8080/create-chat` : `${protocol}://${host}/create-chat`;
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            participants: [fromId, toId],
+            produtoId: productId,
+            produtoNome: productName || 'Conversa sobre produto',
+            usuariosInfo: {
+              [fromId]: currentUserInfo,
+              [toId]: otherUserInfo
+            }
+          })
+        });
+
+        if (!response.ok) throw new Error(`Erro no servidor: ${response.status}`);
+        const result = await response.json();
+        chatId = result.chatId;
+
+      } catch (err) {
+        console.error("❌ Erro ao criar/checagem de chat:", err);
+        showError("Ops! Erro ao iniciar o chat. Verifica se o servidor tá rodando no 8080 e tenta de novo! 😅");
+        return;
+      }
+
+      // Atualiza header com info real do outro user!
+      setHeaderInfo(otherUserInfo, productName || 'Conversa sobre produto');
+      connectWS(chatId, currentUser.uid);
+
+      const presencaRef = doc(db, "presencas", toId);
+      onSnapshot(presencaRef, (snap) => {
+        if (!snap.exists()) { setStatusOnline(false); return; }
+        const data = snap.data();
+        if (data.online === true) setStatusOnline(true);
+        else if (data.ultimoAcesso) {
+          let visto;
+          if (typeof data.ultimoAcesso.toDate === 'function') {
+            visto = data.ultimoAcesso.toDate();
+          } else visto = new Date(data.ultimoAcesso);
+          chatStatus.innerHTML = `<span class="text-xs font-semibold text-gray-500">Visto por último às ${formatarDataHora(visto)}</span>`;
+        } else setStatusOnline(false);
+      });
+    });
+
+    messageInput.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+    sendButton.onclick = sendMessage;
+    function sendMessage() {
+      const text = messageInput.value.trim();
+      if (!text || !socket || socket.readyState !== WebSocket.OPEN) return;
+      const messagePayload = {
+        type: "message",
+        from: currentUser.uid,
+        fromName: currentUser.displayName || 'Anônimo',
+        fromPhotoURL: currentUser.photoURL || "",
+        text,
+        timestamp: Date.now(),
+        replyTo: replyToMsgId,
+        id: `msg_${Date.now()}`
+      };
+      socket.send(JSON.stringify(messagePayload));
+      messageInput.value = '';
+      cancelReplyBtn.click();
+    }
+
+    let typingTimeout;
+    messageInput.addEventListener('input', () => {
+      clearTimeout(typingTimeout);
+      socket?.send(JSON.stringify({ type: 'typing', from: currentUser.uid }));
+      typingTimeout = setTimeout(() => {
+        socket?.send(JSON.stringify({ type: 'stopTyping', from: currentUser.uid }));
+      }, 1500);
+    });
+  </script>
+</body>
+</html>

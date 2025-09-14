@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Editar Recurso - Eco Tech Hub</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            darkbg: "#18181b",
+            grayx: {
+              50: "#f3f4f6",
+              100: "#e5e7eb",
+              200: "#d1d5db",
+              300: "#9ca3af",
+              400: "#6b7280",
+              500: "#4b5563",
+              600: "#374151",
+              700: "#23272F",
+              800: "#18181b",
+              900: "#111112"
+            },
+            accent: "#38bdf8"
+          },
+          boxShadow: {
+            soft: '0 10px 40px -10px rgba(0,0,0,0.23)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #23272f; }
+    ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #374151; }
+    #header-avatar { object-fit: cover; }
+    @media (max-width: 767px) {
+      #mobile-navbar.visible { display: flex !important; }
+    }
+  </style>
+</head>
+<body class="bg-white dark:bg-darkbg text-grayx-900 dark:text-grayx-50 min-h-screen flex flex-col">
+
+  <!-- HEADER unificado igual index/produtos/chat -->
+  <header class="w-full fixed top-0 left-0 z-50 bg-white/90 dark:bg-grayx-900/95 shadow-sm border-b border-grayx-200 dark:border-grayx-700 backdrop-blur-xl">
+    <nav class="container mx-auto max-w-7xl px-4 flex items-center justify-between h-16">
+      <div class="flex items-center gap-3">
+        <span class="text-xl">🌐</span>
+        <span class="text-xl font-bold tracking-wider text-grayx-900 dark:text-grayx-50 ml-2">Eco Tech Hub</span>
+      </div>
+      <div class="hidden md:flex gap-2 flex-wrap items-center">
+        <a href="index.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition font-semibold">Home</a>
+        <a href="dashboard.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Dashboard</a>
+        <a href="register.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Cadastrar Recurso</a>
+        <a href="profile.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Perfil</a>
+        <a href="conversas.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Minhas Conversas</a>
+      </div>
+      <div class="flex items-center ml-auto md:ml-0 gap-2">
+        <a href="profile.html" class="flex-shrink-0" title="Perfil">
+          <img id="header-avatar" class="w-9 h-9 rounded-full bg-grayx-200 dark:bg-grayx-700 border" src="https://ui-avatars.com/api/?background=eee&color=23272F&name=User" alt="Usuário" referrerpolicy="no-referrer">
+        </a>
+        <button id="theme-toggle" class="p-2 rounded hover:bg-grayx-200 dark:hover:bg-grayx-700 text-grayx-400 dark:text-grayx-300" title="Mudar tema">
+          <i class="fa-solid fa-sun dark:hidden"></i>
+          <i class="fa-solid fa-moon hidden dark:inline"></i>
+        </button>
+        <button id="mobile-menu-toggle" class="md:hidden p-2 text-grayx-600 dark:text-grayx-300 hover:bg-grayx-200 dark:hover:bg-grayx-700 rounded ml-1" title="Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </nav>
+    <!-- Menu mobile global -->
+    <div id="mobile-navbar" class="fixed top-16 left-0 w-full bg-white dark:bg-grayx-900 border-b border-grayx-200 dark:border-grayx-700 shadow-xl z-40 flex-col gap-2 px-2 py-4 hidden">
+      <div class="flex items-center gap-2 px-3 pb-2">
+        <input id="mobile-menu-search" type="text" placeholder="Buscar..." class="w-full px-3 py-2 rounded-lg border border-grayx-200 dark:border-grayx-700 bg-grayx-100 dark:bg-grayx-800 text-grayx-900 dark:text-grayx-100 focus:ring-accent focus:ring-2 outline-none" />
+        <i class="fa-solid fa-search text-grayx-400 dark:text-grayx-300"></i>
+      </div>
+      <a href="index.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Home</a>
+      <a href="dashboard.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Dashboard</a>
+      <a href="register.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Cadastrar Recurso</a>
+      <a href="profile.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Perfil</a>
+      <a href="conversas.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Minhas Conversas</a>
+    </div>
+  </header>
+
+  <main class="flex flex-1 flex-col items-center justify-center pt-28 pb-12 w-full min-h-screen">
+    <div class="w-full max-w-2xl bg-white dark:bg-grayx-800 p-6 sm:p-8 rounded-2xl shadow-lg border border-grayx-200 dark:border-grayx-700">
+      <h2 class="text-2xl font-bold mb-6 text-grayx-800 dark:text-grayx-50">Editar Recurso</h2>
+
+      <form id="edit-form" class="space-y-6">
+        <input type="hidden" id="produtoId" />
+
+        <div>
+          <label for="nome" class="block text-sm font-medium mb-1">Nome</label>
+          <input id="nome" type="text" required class="w-full px-4 py-2 border rounded-md dark:bg-grayx-700 dark:border-grayx-600 dark:text-grayx-100">
+        </div>
+        <div>
+          <label for="descricao" class="block text-sm font-medium mb-1">Descrição</label>
+          <textarea id="descricao" rows="4" required class="w-full px-4 py-2 border rounded-md dark:bg-grayx-700 dark:border-grayx-600 dark:text-grayx-100"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">URLs das Imagens</label>
+          <input type="url" id="imagem1" class="w-full mb-2 px-4 py-2 border rounded-md dark:bg-grayx-700 dark:border-grayx-600 dark:text-grayx-100" placeholder="Imagem 1" />
+          <input type="url" id="imagem2" class="w-full mb-2 px-4 py-2 border rounded-md dark:bg-grayx-700 dark:border-grayx-600 dark:text-grayx-100" placeholder="Imagem 2" />
+          <input type="url" id="imagem3" class="w-full mb-2 px-4 py-2 border rounded-md dark:bg-grayx-700 dark:border-grayx-600 dark:text-grayx-100" placeholder="Imagem 3" />
+          <input type="url" id="imagem4" class="w-full px-4 py-2 border rounded-md dark:bg-grayx-700 dark:border-grayx-600 dark:text-grayx-100" placeholder="Imagem 4" />
+        </div>
+        <div>
+          <label for="categoria" class="block text-sm font-medium mb-1">Categoria</label>
+          <select id="categoria" class="w-full px-4 py-2 border rounded-md bg-white dark:bg-grayx-700 dark:text-grayx-100 dark:border-grayx-600">
+            <option value="Móveis">Móveis</option>
+            <option value="Eletrônicos">Eletrônicos</option>
+            <option value="Equipamentos">Equipamentos</option>
+            <option value="Veículos">Veículos</option>
+            <option value="Plásticos">Plásticos</option>
+            <option value="Metais">Metais</option>
+            <option value="Têxteis">Têxteis</option>
+            <option value="Outros">Outros</option>
+          </select>
+        </div>
+        <div>
+          <label for="quantidade" class="block text-sm font-medium mb-1">Quantidade</label>
+          <input id="quantidade" type="number" min="1" required class="w-full px-4 py-2 border rounded-md dark:bg-grayx-700 dark:border-grayx-600 dark:text-grayx-100">
+        </div>
+        <div>
+          <label for="telefone" class="block text-sm font-medium mb-1">Telefone</label>
+          <input id="telefone" type="tel" required class="w-full px-4 py-2 border rounded-md dark:bg-grayx-700 dark:border-grayx-600 dark:text-grayx-100">
+        </div>
+        <div>
+          <label for="endereco" class="block text-sm font-medium mb-1">Endereço</label>
+          <input id="endereco" type="text" required class="w-full px-4 py-2 border rounded-md dark:bg-grayx-700 dark:border-grayx-600 dark:text-grayx-100">
+        </div>
+
+        <div class="flex justify-end items-center pt-4">
+          <p id="success-message" class="text-green-600 font-medium mr-4 hidden">Atualizado com sucesso!</p>
+          <button type="submit" id="update-button" class="bg-accent text-white px-8 py-3 rounded-md hover:bg-accent/80 transition">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <footer class="bg-grayx-100 dark:bg-grayx-900 text-grayx-500 dark:text-grayx-400 text-center py-6 mt-auto w-full">
+    <p class="text-sm">&copy; 2025 Eco Tech Hub — Um futuro inteligente 🌐</p>
+  </footer>
+
+  <!-- Script tema/menu/avatar igual padrão -->
+  <script>
+    const themeToggle = document.getElementById("theme-toggle");
+    const root = document.documentElement;
+    const applyTheme = (mode) => {
+      if (mode === 'dark') root.classList.add('dark');
+      else root.classList.remove('dark');
+      localStorage.setItem('theme', mode);
+    };
+    const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme(savedTheme);
+    themeToggle?.addEventListener('click', () => {
+      const now = root.classList.contains('dark') ? 'light' : 'dark';
+      applyTheme(now);
+    });
+
+    // Menu mobile
+    const menuBtn = document.getElementById("mobile-menu-toggle");
+    const mobileNavbar = document.getElementById("mobile-navbar");
+    menuBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      mobileNavbar.classList.toggle("hidden");
+      mobileNavbar.classList.toggle("visible");
+    });
+    window.addEventListener('scroll', () => { mobileNavbar?.classList.add('hidden'); mobileNavbar?.classList.remove('visible'); });
+    // Filtro menu mobile
+    const mobileMenuSearch = document.getElementById('mobile-menu-search');
+    if (mobileMenuSearch) {
+      mobileMenuSearch.addEventListener('input', e => {
+        const term = (e.target.value || '').toLowerCase();
+        document.querySelectorAll('#mobile-navbar a').forEach(link => {
+          if (link.textContent.toLowerCase().includes(term) || link.tagName !== 'A') {
+            link.style.display = "";
+          } else {
+            link.style.display = "none";
+          }
+        });
+      });
+    }
+  </script>
+  <!-- Firebase + carregamento do perfil/avatar logado -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCexikls640kZgxsknXUQpHZiNEPwRf4xg",
+      authDomain: "encurta-c3642.firebaseapp.com",
+      projectId: "encurta-c3642",
+      storageBucket: "encurta-c3642.appspot.com",
+      messagingSenderId: "365232410104",
+      appId: "1:365232410104:web:d67b449427153593ec5a0d",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth();
+    const headerAvatar = document.getElementById("header-avatar");
+
+    const form = document.getElementById('edit-form');
+    const successMsg = document.getElementById('success-message');
+    const updateBtn = document.getElementById('update-button');
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const produtoId = urlParams.get('id');
+
+    if (!produtoId) {
+      alert("ID do produto não fornecido.");
+      window.location.href = "index.html";
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        alert("Faça login primeiro.");
+        window.location.href = "login.html";
+        return;
+      }
+      // Coloca avatar real do logado no header
+      if (user.photoURL) {
+        headerAvatar.src = user.photoURL;
+      } else if (user.displayName) {
+        headerAvatar.src = `https://ui-avatars.com/api/?background=eee&color=23272F&name=${user.displayName[0]}`;
+      }
+
+      const docRef = doc(db, "produtos", produtoId);
+      const docSnap = await getDoc(docRef);
+
+      if (!docSnap.exists()) {
+        alert("Produto não encontrado.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      const data = docSnap.data();
+      document.getElementById("nome").value = data.nome || "";
+      document.getElementById("descricao").value = data.descricao || "";
+      document.getElementById("categoria").value = data.categoria || "Outros";
+      document.getElementById("quantidade").value = data.quantidade || 1;
+      document.getElementById("telefone").value = data.telefone || "";
+      document.getElementById("endereco").value = data.endereco || "";
+
+      const imagens = data.imagens || [];
+      document.getElementById("imagem1").value = imagens[0] || "";
+      document.getElementById("imagem2").value = imagens[1] || "";
+      document.getElementById("imagem3").value = imagens[2] || "";
+      document.getElementById("imagem4").value = imagens[3] || "";
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      updateBtn.disabled = true;
+      updateBtn.textContent = "Salvando...";
+
+      const imagens = [
+        document.getElementById("imagem1").value,
+        document.getElementById("imagem2").value,
+        document.getElementById("imagem3").value,
+        document.getElementById("imagem4").value,
+      ].filter(Boolean);
+
+      try {
+        await updateDoc(doc(getFirestore(), "produtos", produtoId), {
+          nome: document.getElementById("nome").value,
+          descricao: document.getElementById("descricao").value,
+          categoria: document.getElementById("categoria").value,
+          quantidade: parseInt(document.getElementById("quantidade").value),
+          telefone: document.getElementById("telefone").value,
+          endereco: document.getElementById("endereco").value,
+          imagens: imagens.length ? imagens : ['https://via.placeholder.com/400x300.png?text=Sem+Imagem']
+        });
+
+        successMsg.classList.remove("hidden");
+        setTimeout(() => window.location.href = "index.html", 1500);
+      } catch (err) {
+        alert("Erro ao atualizar: " + err.message);
+      } finally {
+        updateBtn.disabled = false;
+        updateBtn.textContent = "Salvar";
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Perfil da Empresa - Eco Tech Hub</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            darkbg: "#18181b",
+            grayx: {
+              50: "#f3f4f6",
+              100: "#e5e7eb",
+              200: "#d1d5db",
+              300: "#9ca3af",
+              400: "#6b7280",
+              500: "#4b5563",
+              600: "#374151",
+              700: "#23272F",
+              800: "#18181b",
+              900: "#111112"
+            },
+            accent: "#38bdf8"
+          },
+          boxShadow: {
+            soft: '0 10px 40px -10px rgba(0,0,0,0.23)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #23272f; }
+    ::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 10px; }
+    .line-clamp-2 {
+      overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+    }
+    #header-avatar { object-fit: cover; }
+    @media (max-width: 767px) {
+      #mobile-navbar.visible { display: flex !important; }
+    }
+  </style>
+</head>
+<body class="bg-white dark:bg-darkbg text-grayx-900 dark:text-grayx-50 min-h-screen flex flex-col">
+
+  <!-- HEADER -->
+  <header class="w-full fixed top-0 left-0 z-50 bg-white/90 dark:bg-grayx-900/95 shadow-sm border-b border-grayx-200 dark:border-grayx-700 backdrop-blur-xl">
+    <nav class="container mx-auto max-w-7xl px-4 flex items-center justify-between h-16">
+      <div class="flex items-center gap-3">
+        <span class="text-xl">🌐</span>
+        <span class="text-xl font-bold tracking-wider text-grayx-900 dark:text-grayx-50 ml-2">Eco Tech Hub</span>
+      </div>
+      <div class="hidden md:flex gap-2 flex-wrap items-center">
+        <a href="index.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition font-semibold">Home</a>
+        <a href="dashboard.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Dashboard</a>
+        <a href="register.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Cadastrar Recurso</a>
+        <a href="profile.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Perfil</a>
+        <a href="conversas.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Minhas Conversas</a>
+      </div>
+      <div class="flex items-center ml-auto md:ml-0 gap-2">
+        <a href="profile.html" class="flex-shrink-0" title="Perfil">
+          <img id="header-avatar" class="w-9 h-9 rounded-full bg-grayx-200 dark:bg-grayx-700 border border-grayx-300 dark:border-grayx-600 shadow transition hover:ring-2 hover:ring-accent" src="https://ui-avatars.com/api/?background=eee&color=23272F&name=User" alt="Usuário" referrerpolicy="no-referrer">
+        </a>
+        <button id="theme-toggle" class="p-2 rounded hover:bg-grayx-200 dark:hover:bg-grayx-700 text-grayx-400 dark:text-grayx-300" title="Mudar tema">
+          <i class="fa-solid fa-sun dark:hidden"></i>
+          <i class="fa-solid fa-moon hidden dark:inline"></i>
+        </button>
+        <button id="mobile-menu-toggle" class="md:hidden p-2 text-grayx-600 dark:text-grayx-300 hover:bg-grayx-200 dark:hover:bg-grayx-700 rounded ml-1" title="Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </nav>
+    <!-- Menu mobile igual em todas telas -->
+    <div id="mobile-navbar" class="fixed top-16 left-0 w-full bg-white dark:bg-grayx-900 border-b border-grayx-200 dark:border-grayx-700 shadow-xl z-40 flex-col gap-2 px-2 py-4 hidden">
+      <a href="index.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Home</a>
+      <a href="dashboard.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Dashboard</a>
+      <a href="register.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Cadastrar Recurso</a>
+      <a href="profile.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Perfil</a>
+      <a href="conversas.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Minhas Conversas</a>
+    </div>
+  </header>
+
+  <div class="pt-24"></div>
+
+  <!-- Main Content -->
+  <main class="flex-grow container mx-auto px-4 sm:px-6 py-10">
+    <div class="max-w-5xl mx-auto">
+      <!-- Profile Header -->
+      <div id="profile-header" class="bg-white dark:bg-grayx-800 p-6 sm:p-8 rounded-2xl shadow-lg flex flex-col sm:flex-row items-center gap-6 border border-transparent dark:border-accent/50 transition-colors">
+        <p class="text-gray-500 text-center w-full">Carregando perfil...</p>
+      </div>
+      <!-- Listagem de produtos -->
+      <div class="mt-10">
+        <h2 class="text-2xl sm:text-3xl font-semibold text-grayx-800 dark:text-accent mb-6">Meus Recursos Disponibilizados</h2>
+        <div id="user-product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <p id="products-loading" class="text-gray-500 col-span-full text-center">Carregando seus recursos...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-grayx-100 dark:bg-grayx-900 text-grayx-500 dark:text-grayx-400 text-center py-6 mt-auto">
+    <p class="text-sm">&copy; 2025 Eco Tech Hub — Um futuro inteligente 🌐</p>
+  </footer>
+
+  <script>
+    // Modo escuro/claro igual padrão
+    const themeToggle = document.getElementById("theme-toggle");
+    const root = document.documentElement;
+    const applyTheme = (mode) => {
+      if (mode === 'dark') root.classList.add('dark');
+      else root.classList.remove('dark');
+      localStorage.setItem('theme', mode);
+    };
+    const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme(savedTheme);
+    themeToggle?.addEventListener('click', () => {
+      const now = root.classList.contains('dark') ? 'light' : 'dark';
+      applyTheme(now);
+    });
+
+    // Menu mobile igual padrão
+    const menuBtn = document.getElementById("mobile-menu-toggle");
+    const mobileNavbar = document.getElementById("mobile-navbar");
+    menuBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      mobileNavbar.classList.toggle("hidden");
+      mobileNavbar.classList.toggle("visible");
+    });
+    window.addEventListener('scroll', () => { mobileNavbar?.classList.add('hidden'); mobileNavbar?.classList.remove('visible'); });
+    const mobileMenuSearch = document.getElementById('mobile-menu-search');
+    if (mobileMenuSearch) {
+      mobileMenuSearch.addEventListener('input', e => {
+        const term = (e.target.value || '').toLowerCase();
+        document.querySelectorAll('#mobile-navbar a').forEach(link => {
+          if (link.textContent.toLowerCase().includes(term) || link.tagName !== 'A') {
+            link.style.display = "";
+          } else {
+            link.style.display = "none";
+          }
+        });
+      });
+    }
+  </script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, query, where, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyCexikls640kZgxsknXUQpHZiNEPwRf4xg",
+      authDomain: "encurta-c3642.firebaseapp.com",
+      projectId: "encurta-c3642",
+      storageBucket: "encurta-c3642.appspot.com",
+      messagingSenderId: "365232410104",
+      appId: "1:365232410104:web:d67b449427153593ec5a0d",
+      measurementId: "G-EQ6213FPJH"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const profileHeader = document.getElementById("profile-header");
+    const userProductList = document.getElementById("user-product-list");
+    const productsLoadingMsg = document.getElementById("products-loading");
+    const headerAvatar = document.getElementById("header-avatar");
+
+    function renderProfileHeader(user, productCount = 0) {
+      const nome = user.displayName || "Usuário Anônimo";
+      const email = user.email || "E-mail não informado";
+      const uid = user.uid;
+      const foto = user.photoURL || `https://ui-avatars.com/api/?background=eee&color=23272F&name=${encodeURIComponent(nome)}`;
+      headerAvatar.src = foto;
+      profileHeader.innerHTML = `
+        <img src="${foto}" alt="Foto de ${nome}" class="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-accent/30 dark:border-accent shadow-md">
+        <div class="text-center sm:text-left">
+          <h1 class="text-3xl font-bold text-grayx-900 dark:text-accent">${nome}</h1>
+          <p class="text-md text-grayx-600 dark:text-grayx-200 mt-1">${email}</p>
+          <p class="text-sm text-grayx-500 mt-2 max-w-xl">
+            Bem-vindo(a) à sua conta. Aqui você pode ver e gerenciar os recursos que sua empresa compartilhou.
+          </p>
+          <div class="mt-4 flex flex-wrap justify-center sm:justify-start gap-4 text-sm">
+            <div class="bg-accent/10 text-accent px-3 py-1 rounded-full font-medium">
+              ${productCount} Recursos Partilhados
+            </div>
+            <div class="bg-grayx-100 dark:bg-grayx-900 text-grayx-900 dark:text-grayx-50 px-3 py-1 rounded-full font-mono">
+              UID: <span class="select-all">${uid}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    function createImageCarousel(images, altText = "Imagem do recurso") {
+      if (!images.length) {
+        return `<img src="https://placehold.co/600x400/fecaca/b91c1c?text=Imagem+Indisponível" alt="${altText}" class="w-full h-48 object-cover rounded-t-2xl"/>`;
+      }
+      return `
+        <div class="w-full h-48 overflow-hidden rounded-t-2xl relative">
+          <img src="${images[0]}" alt="${altText}" class="w-full h-full object-cover"/>
+        </div>`;
+    }
+    function renderUserProducts(products) {
+      userProductList.innerHTML = '';
+      if (products.length === 0) {
+        userProductList.innerHTML = `
+          <p class="text-grayx-500 col-span-full text-center">
+            Você ainda não cadastrou nenhum recurso. 
+            <a href="register.html" class="text-accent hover:underline">Cadastre o primeiro!</a>
+          </p>`;
+        return;
+      }
+      products.forEach((p) => {
+        const imagens = Array.isArray(p.imagens) ? p.imagens.filter(Boolean) : (p.imagem ? [p.imagem] : []);
+        const card = document.createElement("div");
+        card.className = "bg-white dark:bg-grayx-800 border border-transparent dark:border-accent/40 rounded-2xl shadow flex flex-col transition";
+        card.innerHTML = `
+          <div class="relative group">${createImageCarousel(imagens, p.nome)}</div>
+          <div class="p-5 flex flex-col flex-grow">
+            <h4 class="text-xl font-semibold text-grayx-900 dark:text-accent mb-1 leading-snug">${p.nome || "Sem nome"}</h4>
+            <p class="text-sm text-grayx-600 dark:text-grayx-200 line-clamp-2 mb-4">${p.descricao || "Sem descrição"}</p>
+            <div class="flex justify-between items-center text-xs mb-4 gap-2">
+              <span class="bg-accent/10 text-accent px-3 py-1 rounded-full font-medium">${p.categoria || "Sem categoria"}</span>
+              <span class="bg-grayx-100 dark:bg-grayx-900 px-3 py-1 rounded-full font-medium">${p.tipo || "Sem tipo"}</span>
+            </div>
+            <div class="bg-grayx-100 dark:bg-grayx-900 rounded-lg p-3 text-sm text-grayx-800 dark:text-grayx-100 space-y-1 border border-grayx-200 dark:border-accent/10 mb-4">
+              <p><span class="font-medium text-grayx-900 dark:text-accent">Quantidade:</span> ${p.quantidade || "1"}</p>
+              <p><span class="font-medium text-grayx-900 dark:text-accent">Endereço:</span> ${p.endereco || "Não informado"}</p>
+              <p><span class="font-medium text-grayx-900 dark:text-accent">Telefone:</span> ${p.telefone || "Não informado"}</p>
+            </div>
+            <div class="mt-auto pt-4 border-t border-grayx-100 dark:border-accent/20 flex gap-2">
+              <a href="edit-resource.html?id=${p.id}" class="flex-1 text-center bg-accent hover:bg-accent/80 text-white px-4 py-2 rounded-lg text-sm shadow transition">Editar</a>
+              <button onclick="excluirProduto('${p.id}')" class="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm shadow transition">Excluir</button>
+            </div>
+          </div>`;
+        userProductList.appendChild(card);
+      });
+    }
+    function fetchUserProducts(userId, user) {
+      const productsRef = collection(db, "produtos");
+      const q = query(productsRef, where("usuarioId", "==", userId));
+      onSnapshot(q, (snapshot) => {
+        const userProducts = [];
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          userProducts.push({ id: doc.id, ...data });
+        });
+        userProducts.sort((a, b) => {
+          if (!a.createdAt || !b.createdAt) return 0;
+          return b.createdAt.toDate() - a.createdAt.toDate();
+        });
+        renderUserProducts(userProducts);
+        renderProfileHeader(user, userProducts.length);
+      }, (error) => {
+        if(productsLoadingMsg) productsLoadingMsg.textContent = "Erro ao carregar seus recursos.";
+      });
+    }
+    window.excluirProduto = async function(id) {
+      const confirmar = confirm("Tem certeza que deseja excluir este recurso?");
+      if (!confirmar) return;
+      try {
+        await deleteDoc(doc(db, "produtos", id));
+        alert("Produto excluído com sucesso!");
+      } catch (err) {
+        alert("Não foi possível excluir o produto.");
+      }
+    }
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        renderProfileHeader(user);
+        fetchUserProducts(user.uid, user);
+      } else {
+        if (!window.location.pathname.includes("login.html")) {
+          window.location.href = "./login.html";
+        }
+      }
+    });
+  </script>
+</body>
+</html>

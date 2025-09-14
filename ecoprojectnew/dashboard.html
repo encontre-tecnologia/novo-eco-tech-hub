@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Eco Tech Hub</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            darkbg: "#18181b",
+            grayx: {
+              50: "#f3f4f6",
+              100: "#e5e7eb",
+              200: "#d1d5db",
+              300: "#9ca3af",
+              400: "#6b7280",
+              500: "#4b5563",
+              600: "#374151",
+              700: "#23272F",
+              800: "#18181b",
+              900: "#111112"
+            },
+            accent: "#38bdf8"
+          },
+          boxShadow: {
+            soft: '0 10px 40px -10px rgba(0,0,0,0.23)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    #header-avatar { object-fit: cover; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #23272f; }
+    ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #374151; }
+    @media (max-width: 767px) {
+      #mobile-navbar.visible { display: flex !important; }
+    }
+  </style>
+</head>
+<body class="bg-white dark:bg-darkbg text-grayx-900 dark:text-grayx-50 min-h-screen">
+
+  <!-- HEADER GLOBAL PADRÃO -->
+  <header class="w-full fixed top-0 left-0 z-50 bg-white/90 dark:bg-grayx-900/95 shadow-sm border-b border-grayx-200 dark:border-grayx-700 backdrop-blur-xl">
+    <nav class="container mx-auto max-w-7xl px-4 flex items-center justify-between h-16">
+      <div class="flex items-center gap-3">
+        <span class="text-xl">🌐</span>
+        <span class="text-xl font-bold tracking-wider text-grayx-900 dark:text-grayx-50 ml-2">Eco Tech Hub</span>
+      </div>
+      <div class="hidden md:flex gap-2 flex-wrap items-center">
+        <a href="index.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition font-semibold">Home</a>
+        <a href="dashboard.html" class="px-4 py-2 rounded text-accent font-bold bg-accent/10 dark:bg-accent/20">Dashboard</a>
+        <a href="register.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Cadastrar Recurso</a>
+        <a href="profile.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Perfil</a>
+        <a href="conversas.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Minhas Conversas</a>
+      </div>
+      <div class="flex items-center ml-auto md:ml-0 gap-2">
+        <a href="profile.html" class="flex-shrink-0" title="Perfil">
+          <img id="header-avatar" class="w-9 h-9 rounded-full bg-grayx-200 dark:bg-grayx-700 border border-grayx-300 dark:border-grayx-600 shadow transition hover:ring-2 hover:ring-accent" src="https://ui-avatars.com/api/?background=eee&color=23272F&name=User" alt="Usuário" referrerpolicy="no-referrer">
+        </a>
+        <button id="theme-toggle" class="p-2 rounded hover:bg-grayx-200 dark:hover:bg-grayx-700 text-grayx-400 dark:text-grayx-300" title="Modo Claro/Escuro">
+          <i class="fa-solid fa-sun dark:hidden"></i>
+          <i class="fa-solid fa-moon hidden dark:inline"></i>
+        </button>
+        <button id="mobile-menu-toggle" class="md:hidden p-2 text-grayx-600 dark:text-grayx-300 hover:bg-grayx-200 dark:hover:bg-grayx-700 rounded ml-1" title="Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </nav>
+    <!-- MENU MOBILE global -->
+    <div id="mobile-navbar" class="fixed top-16 left-0 w-full bg-white dark:bg-grayx-900 border-b border-grayx-200 dark:border-grayx-700 shadow-xl z-40 flex-col gap-2 px-2 py-4 hidden">
+      <a href="index.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Home</a>
+      <a href="dashboard.html" class="block px-6 py-3 rounded text-accent font-bold bg-accent/10 dark:bg-accent/20">Dashboard</a>
+      <a href="register.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Cadastrar Recurso</a>
+      <a href="profile.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Perfil</a>
+      <a href="conversas.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Minhas Conversas</a>
+    </div>
+  </header>
+
+  <main class="flex-1 flex flex-col min-h-screen pt-24">
+    <div class="container mx-auto px-4 sm:px-6 py-8 max-w-4xl">
+      <div class="mb-8">
+        <h2 class="text-2xl sm:text-3xl font-bold text-grayx-900 dark:text-grayx-100">Olá, <span id="user-name">Usuário</span>!</h2>
+        <p class="text-grayx-600 dark:text-grayx-400 mt-1">Resumo do seu impacto positivo na plataforma:</p>
+      </div>
+      <!-- Card para Total Produtos e CO₂ -->
+      <div class="bg-grayx-100 dark:bg-grayx-800 rounded-2xl shadow-lg p-6 mb-10 border border-transparent dark:border-accent/50">
+        <h3 class="text-lg font-bold text-grayx-600 dark:text-grayx-300 mb-4 text-center sm:text-left">Resumo Rápido</h3>
+        <div class="flex flex-col sm:flex-row items-center gap-8">
+          <div class="flex-1 text-center sm:text-left">
+            <span class="text-md text-grayx-500 dark:text-grayx-400 font-semibold block">Total Produtos</span>
+            <span id="total-recursos" class="text-4xl font-extrabold text-accent block mt-1 mb-1">0</span>
+          </div>
+          <div class="flex-1 text-center sm:text-left">
+            <span class="text-md text-grayx-500 dark:text-grayx-400 font-semibold block">CO₂ Salvo no total</span>
+            <span id="co2-reduzido" class="text-4xl font-extrabold text-accent block mt-1 mb-1">0 kg</span>
+          </div>
+        </div>
+      </div>
+      <!-- Gráfico centro -->
+      <div class="bg-grayx-100 dark:bg-grayx-800 rounded-2xl shadow-lg p-6 flex flex-col items-center border border-transparent dark:border-accent/50">
+        <h3 class="text-lg font-bold text-grayx-600 dark:text-grayx-300 mb-2">CO₂ Economizado por Categoria</h3>
+        <div class="w-full flex justify-center">
+          <canvas id="co2Chart" style="max-width:700px;min-height:240px;" height="180"></canvas>
+        </div>
+      </div>
+      <!-- Equivalências -->
+      <div class="mt-10 flex flex-col sm:flex-row gap-4 items-center justify-center">
+        <div class="flex flex-1 items-center gap-2 bg-grayx-50 dark:bg-grayx-900/40 p-4 rounded-xl justify-center border border-transparent dark:border-accent/50">
+          <span class="text-2xl">🌳</span>
+          <div>
+            <div class="text-xs text-grayx-500 dark:text-grayx-400">Equiv. árvores/ano</div>
+            <b id="equiv-arvores" class="text-accent text-xl">0</b>
+          </div>
+        </div>
+        <div class="flex flex-1 items-center gap-2 bg-grayx-50 dark:bg-grayx-900/40 p-4 rounded-xl justify-center border border-transparent dark:border-accent/50">
+          <span class="text-2xl">🚗</span>
+          <div>
+            <div class="text-xs text-grayx-500 dark:text-grayx-400">Equiv. KM de carro</div>
+            <b id="equiv-km" class="text-accent text-xl">0 km</b>
+          </div>
+        </div>
+        <div class="flex flex-1 items-center gap-2 bg-grayx-50 dark:bg-grayx-900/40 p-4 rounded-xl justify-center border border-transparent dark:border-accent/50">
+          <span class="text-2xl">📱</span>
+          <div>
+            <div class="text-xs text-grayx-500 dark:text-grayx-400">Cargas completas celular</div>
+            <b id="equiv-celular" class="text-accent text-xl">0</b>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer class="bg-grayx-200 dark:bg-grayx-900 text-grayx-500 dark:text-grayx-400 text-center py-4 mt-auto">
+    <p class="text-sm">&copy; 2025 Eco Tech Hub — Um futuro inteligente 🌐</p>
+  </footer>
+
+  <script>
+    // Tema toggle + menu mobile + busca no menu mobile
+    const themeToggle = document.getElementById("theme-toggle");
+    const root = document.documentElement;
+    const applyTheme = (mode) => {
+      if (mode === 'dark') root.classList.add('dark');
+      else root.classList.remove('dark');
+      localStorage.setItem('theme', mode);
+    };
+    const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme(savedTheme);
+    themeToggle?.addEventListener('click', () => {
+      const now = root.classList.contains('dark') ? 'light' : 'dark';
+      applyTheme(now);
+    });
+    const menuBtn = document.getElementById("mobile-menu-toggle");
+    const mobileNavbar = document.getElementById("mobile-navbar");
+    menuBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      mobileNavbar.classList.toggle("hidden");
+      mobileNavbar.classList.toggle("visible");
+    });
+    window.addEventListener('scroll', () => { mobileNavbar?.classList.add('hidden'); mobileNavbar?.classList.remove('visible'); });
+    const mobileMenuSearch = document.getElementById('mobile-menu-search');
+    if (mobileMenuSearch) {
+      mobileMenuSearch.addEventListener('input', e => {
+        const term = (e.target.value || '').toLowerCase();
+        document.querySelectorAll('#mobile-navbar a').forEach(link => {
+          if (link.textContent.toLowerCase().includes(term) || link.tagName !== 'A') {
+            link.style.display = "";
+          } else {
+            link.style.display = "none";
+          }
+        });
+      });
+    }
+  </script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyCexikls640kZgxsknXUQpHZiNEPwRf4xg",
+      authDomain: "encurta-c3642.firebaseapp.com",
+      projectId: "encurta-c3642",
+      storageBucket: "encurta-c3642.appspot.com",
+      messagingSenderId: "365232410104",
+      appId: "1:365232410104:web:d67b449427153593ec5a0d",
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth();
+
+    function setUserPhotoURL(url, name="User") {
+      const headerAvatar = document.getElementById('header-avatar');
+      if (headerAvatar) {
+        if (url) {
+          headerAvatar.src = url;
+        } else {
+          headerAvatar.src = `https://ui-avatars.com/api/?background=eee&color=23272F&name=${encodeURIComponent(name)}`;
+        }
+      }
+    }
+
+    // DOM refs
+    const userNameEl = document.getElementById('user-name');
+    const totalRecursosEl = document.getElementById('total-recursos');
+    const co2ReduzidoEl = document.getElementById('co2-reduzido');
+    const equivArvoresEl = document.getElementById('equiv-arvores');
+    const equivKmEl = document.getElementById('equiv-km');
+    const equivCelularEl = document.getElementById('equiv-celular');
+    const co2ChartEl = document.getElementById('co2Chart');
+
+    const CO2_POR_ARVORE_ANO = 22;
+    const CO2_POR_KM_CARRO = 0.15;
+    const CO2_POR_CARGA_CELULAR = 0.004;
+    const co2SavingsPerCategory = {
+      'Móveis': 50,
+      'Eletrônicos': 25,
+      'Equipamentos': 120,
+      'Veículos': 1500,
+      'Plásticos': 6,
+      'Metais': 70,
+      'Têxteis': 10,
+      'Outros': 5 
+    };
+
+    let co2ChartInstance = null;
+
+    async function loadDashboardData(user) {
+      if (!user) return;
+      userNameEl.textContent = user.displayName || 'Usuário';
+      setUserPhotoURL(user.photoURL, user.displayName || "User");
+      try {
+        const q = query(collection(db, "produtos"), where("usuarioId", "==", user.uid));
+        const querySnapshot = await getDocs(q);
+
+        let totalRecursos = 0;
+        let totalCo2Saved = 0;
+        const categoryCO2 = {};
+        querySnapshot.forEach(doc => {
+          const produto = doc.data();
+          const quantidade = produto.quantidade || 1;
+          const categoria = produto.categoria || "Outros";
+          totalRecursos += quantidade;
+          const co2PerItem = co2SavingsPerCategory[categoria] || co2SavingsPerCategory['Outros'];
+          totalCo2Saved += co2PerItem * quantidade;
+          categoryCO2[categoria] = (categoryCO2[categoria] || 0) + (co2PerItem * quantidade);
+        });
+        totalRecursosEl.textContent = totalRecursos;
+        co2ReduzidoEl.textContent = `${totalCo2Saved.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} kg`;
+        const arvoresEquivalentes = totalCo2Saved / CO2_POR_ARVORE_ANO;
+        const kmCarroEvitados = totalCo2Saved / CO2_POR_KM_CARRO;
+        const cargasCelular = totalCo2Saved / CO2_POR_CARGA_CELULAR;
+        equivArvoresEl.textContent = arvoresEquivalentes.toFixed(1);
+        equivKmEl.textContent = `${kmCarroEvitados.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} km`;
+        equivCelularEl.textContent = cargasCelular.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+
+        // Gráfico
+        if (co2ChartInstance) co2ChartInstance.destroy();
+        const ctx = co2ChartEl.getContext('2d');
+        co2ChartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: Object.keys(categoryCO2),
+            datasets: [{
+              label: 'Kg CO₂ Salvo',
+              data: Object.values(categoryCO2),
+              backgroundColor: [
+                '#38bdf8bb', '#06b6d4bb', '#4F46E5bb', '#22d3eebb', '#a3e635bb', '#fde047bb', '#f472b6bb', '#0ea5e9aa'
+              ]
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: true }
+            },
+            scales: {
+              x: { grid: {display: false}, title: { display: false }},
+              y: { beginAtZero: true, grid: {color: '#d1d5db22'}, title: { display: true, text: "Kg CO₂" } }
+            }
+          }
+        });
+      } catch (error) {
+        co2ReduzidoEl.textContent = "Erro ao carregar dados.";
+        if (co2ChartInstance) co2ChartInstance.destroy();
+      }
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loadDashboardData(user);
+      } else {
+        userNameEl.textContent = 'Visitante';
+        setUserPhotoURL(null, "Visitante");
+        totalRecursosEl.textContent = '0';
+        co2ReduzidoEl.textContent = '';
+        equivArvoresEl.textContent = '0';
+        equivKmEl.textContent = '0 km';
+        equivCelularEl.textContent = '0';
+        if (co2ChartInstance) co2ChartInstance.destroy();
+        if (co2ChartEl.getContext('2d')) {
+          const ctx = co2ChartEl.getContext('2d');
+          ctx.clearRect(0, 0, co2ChartEl.width, co2ChartEl.height);
+        }
+      }
+    });
+  </script>
+</body>
+</html>

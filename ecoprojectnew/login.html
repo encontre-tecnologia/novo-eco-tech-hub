@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - ReMarket Sustentável</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+  <div class="flex flex-col items-center justify-center min-h-screen px-4">
+    <div class="text-center mb-8">
+      <span class="text-5xl">♻️</span>
+      <h1 class="text-3xl sm:text-4xl font-bold text-green-700 mt-2">ReMarket Sustentável</h1>
+      <p class="text-gray-600 mt-2">Faça login para continuar</p>
+    </div>
+
+    <div class="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
+      <form id="login-form">
+        <div class="mb-5">
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email"
+            placeholder="o.seu.email@empresa.com" 
+            required
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+        </div>
+
+        <div class="mb-6">
+          <div class="flex justify-between items-baseline">
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+            <a href="#" class="text-sm text-green-600 hover:text-green-800 hover:underline">Esqueceu a senha?</a>
+          </div>
+          <input 
+            type="password" 
+            id="password" 
+            name="password"
+            placeholder="••••••••"
+            required
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+        </div>
+
+        <button 
+          type="submit" 
+          class="w-full bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+        >
+          Entrar
+        </button>
+      </form>
+
+      <div class="mt-6 text-center">
+        <p class="text-sm text-gray-600 mb-2">Ou entre com</p>
+        <button 
+          id="google-login"
+          class="w-full bg-white border border-gray-300 text-gray-700 font-medium py-2 px-6 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 shadow-sm"
+        >
+          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
+          Entrar com Google
+        </button>
+      </div>
+
+      <p class="text-center text-sm text-gray-600 mt-8">
+        Não tem uma conta? 
+        <a href="register.html" class="font-medium text-green-600 hover:text-green-800 hover:underline">
+          Cadastre-se
+        </a>
+      </p>
+    </div>
+    
+    <div class="mt-8">
+        <a href="index.html" class="text-sm text-gray-600 hover:text-green-700 transition hover:underline">
+            &larr; Voltar para a página inicial
+        </a>
+    </div>
+  </div>
+
+ <!-- ...mantém o mesmo HTML acima -->
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCexikls640kZgxsknXUQpHZiNEPwRf4xg",
+    authDomain: "encurta-c3642.firebaseapp.com",
+    projectId: "encurta-c3642",
+    storageBucket: "encurta-c3642.firebasestorage.app",
+    messagingSenderId: "365232410104",
+    appId: "1:365232410104:web:d67b449427153593ec5a0d",
+    measurementId: "G-EQ6213FPJH"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  // Login com e-mail e senha
+  document.getElementById('login-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    try {
+      const result = await auth.signInWithEmailAndPassword(email, password);
+      const user = result.user;
+
+      // ✅ Salva UID localmente e mostra no console
+      localStorage.setItem("uid", user.uid);
+      console.log("UID salvo:", user.uid);
+
+      alert('Login bem-sucedido!');
+      window.location.href = 'profile.html';
+    } catch (error) {
+      alert('Erro no login: ' + error.message);
+    }
+  });
+
+  // Login com Google
+  document.getElementById('google-login').addEventListener('click', async () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+      const result = await auth.signInWithPopup(provider);
+      const user = result.user;
+
+      // ✅ Salva UID localmente e mostra no console
+      localStorage.setItem("uid", user.uid);
+      console.log("UID salvo (Google):", user.uid);
+
+      alert('Login com Google bem-sucedido!');
+      window.location.href = 'profile.html';
+    } catch (error) {
+      alert('Erro no login com Google: ' + error.message);
+    }
+  });
+</script>
+
+</body>
+</html>

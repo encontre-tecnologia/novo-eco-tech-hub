@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cadastrar Recurso - ReMarket</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            darkbg: "#18181b",
+            grayx: {
+              50: "#f3f4f6",
+              100: "#e5e7eb",
+              200: "#d1d5db",
+              300: "#9ca3af",
+              400: "#6b7280",
+              500: "#4b5563",
+              600: "#374151",
+              700: "#23272F",
+              800: "#18181b",
+              900: "#111112",
+            },
+            accent: "#38bdf8"
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    #header-avatar { object-fit: cover; }
+  </style>
+</head>
+<body class="bg-white dark:bg-darkbg text-grayx-900 dark:text-grayx-50 min-h-screen">
+
+  <!-- HEADER igual dashboard -->
+  <header class="w-full fixed top-0 left-0 z-50 bg-white/90 dark:bg-grayx-900/95 shadow-sm border-b border-grayx-200 dark:border-grayx-700 backdrop-blur-xl">
+    <nav class="container mx-auto max-w-7xl px-4 flex items-center justify-between h-16">
+      <div class="flex items-center gap-3">
+        <span class="text-xl">♻️</span>
+        <span class="text-xl font-bold tracking-wider text-grayx-900 dark:text-grayx-50 ml-2">ReMarket</span>
+      </div>
+      <div class="hidden md:flex gap-2 flex-wrap items-center">
+        <a href="index.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:text-grayx-900 hover:bg-grayx-100 dark:hover:text-grayx-50 dark:hover:bg-grayx-700 transition font-semibold">Home</a>
+        <a href="dashboard.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:text-grayx-900 hover:bg-grayx-100 dark:hover:text-grayx-50 dark:hover:bg-grayx-700 transition font-semibold">Dashboard</a>
+        <a href="register.html" class="px-4 py-2 rounded text-accent font-bold bg-accent/10 dark:bg-accent/20">Cadastrar Recurso</a>
+        <a href="profile.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:text-grayx-900 hover:bg-grayx-100 dark:hover:text-grayx-50 dark:hover:bg-grayx-700 transition">Perfil</a>
+        <a href="conversas.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:text-grayx-900 hover:bg-grayx-100 dark:hover:text-grayx-50 dark:hover:bg-grayx-700 transition">Minhas Conversas</a>
+      </div>
+      <div class="flex items-center ml-auto md:ml-0 gap-2">
+        <a href="profile.html" class="flex-shrink-0" title="Perfil">
+          <img id="header-avatar" class="w-9 h-9 rounded-full bg-grayx-200 dark:bg-grayx-700 border border-grayx-300 dark:border-grayx-600 shadow transition hover:ring-2 hover:ring-accent" src="https://ui-avatars.com/api/?background=eee&color=23272F&name=User" alt="Usuário" referrerpolicy="no-referrer">
+        </a>
+        <button id="theme-toggle" class="p-2 rounded hover:bg-grayx-200 dark:hover:bg-grayx-700 text-grayx-400 dark:text-grayx-300" title="Modo Claro/Escuro">
+          <i class="fa-solid fa-sun dark:hidden"></i>
+          <i class="fa-solid fa-moon hidden dark:inline"></i>
+        </button>
+        <button id="mobile-menu-toggle" class="md:hidden p-2 text-grayx-600 dark:text-grayx-300 hover:bg-grayx-200 dark:hover:bg-grayx-700 rounded ml-1" title="Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </nav>
+  </header>
+  <div class="pt-24"></div>
+
+  <main class="flex-1 flex justify-center items-start">
+    <div class="container mx-auto px-4 sm:px-6 py-10 max-w-2xl w-full">
+      <div class="bg-white dark:bg-grayx-800 p-6 sm:p-8 rounded-2xl shadow-lg border border-transparent dark:border-accent/50">
+        <h2 class="text-2xl font-bold mb-6 text-grayx-900 dark:text-accent">Detalhes do Recurso</h2>
+        <form id="register-form" class="space-y-6">
+          <div>
+            <label for="nome" class="block text-sm font-medium mb-1">Nome do Recurso</label>
+            <input type="text" id="nome" name="nome" required class="w-full px-4 py-2 border border-grayx-300 dark:border-grayx-700 rounded-lg bg-white dark:bg-grayx-900 text-grayx-900 dark:text-grayx-50 focus:ring-accent focus:border-accent transition-all duration-150">
+          </div>
+          <div>
+            <label for="descricao" class="block text-sm font-medium mb-1">Descrição</label>
+            <textarea id="descricao" name="descricao" rows="4" required class="w-full px-4 py-2 border border-grayx-300 dark:border-grayx-700 rounded-lg bg-white dark:bg-grayx-900 text-grayx-900 dark:text-grayx-50 focus:ring-accent focus:border-accent transition-all duration-150"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">URLs das Imagens (até 4)</label>
+            <input type="url" name="imagem1" placeholder="https://exemplo.com/imagem1.jpg" class="w-full mb-2 px-4 py-2 border border-grayx-300 dark:border-grayx-700 rounded-lg bg-white dark:bg-grayx-900 text-grayx-900 dark:text-grayx-50 focus:ring-accent focus:border-accent transition-all duration-150">
+            <input type="url" name="imagem2" placeholder="URL da Imagem 2 (opcional)" class="w-full mb-2 px-4 py-2 border border-grayx-300 dark:border-grayx-700 rounded-lg bg-white dark:bg-grayx-900 text-grayx-900 dark:text-grayx-50 focus:ring-accent focus:border-accent transition-all duration-150">
+            <input type="url" name="imagem3" placeholder="URL da Imagem 3 (opcional)" class="w-full mb-2 px-4 py-2 border border-grayx-300 dark:border-grayx-700 rounded-lg bg-white dark:bg-grayx-900 text-grayx-900 dark:text-grayx-50 focus:ring-accent focus:border-accent transition-all duration-150">
+            <input type="url" name="imagem4" placeholder="URL da Imagem 4 (opcional)" class="w-full px-4 py-2 border border-grayx-300 dark:border-grayx-700 rounded-lg bg-white dark:bg-grayx-900 text-grayx-900 dark:text-grayx-50 focus:ring-accent focus:border-accent transition-all duration-150">
+          </div>
+          <div>
+            <label for="categoria" class="block text-sm font-medium mb-1">Categoria</label>
+            <select id="categoria" name="categoria" required class="w-full px-4 py-2 border border-grayx-300 dark:border-grayx-700 rounded-lg bg-white dark:bg-grayx-900 text-grayx-900 dark:text-grayx-50 focus:ring-accent focus:border-accent transition-all duration-150">
+              <option value="Móveis">Móveis</option>
+              <option value="Eletrônicos">Eletrônicos</option>
+              <option value="Equipamentos">Equipamentos</option>
+              <option value="Veículos">Veículos</option>
+              <option value="Plásticos">Plásticos</option>
+              <option value="Metais">Metais</option>
+              <option value="Têxteis">Têxteis</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+          <div>
+            <label for="tipo" class="block text-sm font-medium mb-1">Tipo de Recurso</label>
+            <div class="flex space-x-4">
+              <label class="flex items-center">
+                <input type="radio" name="tipo" value="Venda" checked class="mr-2 focus:ring-accent text-accent">
+                <span>Venda</span>
+              </label>
+              <label class="flex items-center">
+                <input type="radio" name="tipo" value="Aluguel" class="mr-2 focus:ring-accent text-accent">
+                <span>Aluguel</span>
+              </label>
+            </div>
+          </div>
+          <div>
+            <label for="valor" class="block text-sm font-medium mb-1">Valor (R$)</label>
+            <input type="number" id="valor" name="valor" required min="0" step="0.01" placeholder="Ex: 25,90" class="w-full px-4 py-2 border border-grayx-300 dark:border-grayx-700 rounded-lg bg-white dark:bg-grayx-900 text-grayx-900 dark:text-grayx-50 focus:ring-accent focus:border-accent transition-all duration-150">
+          </div>
+          <div>
+            <label for="quantidade" class="block text-sm font-medium mb-1">Quantidade</label>
+            <input type="number" id="quantidade" name="quantidade" required min="1" class="w-full px-4 py-2 border border-grayx-300 dark:border-grayx-700 rounded-lg bg-white dark:bg-grayx-900 text-grayx-900 dark:text-grayx-50 focus:ring-accent focus:border-accent transition-all duration-150">
+          </div>
+          <div>
+            <label for="telefone" class="block text-sm font-medium mb-1">Telefone para Contato</label>
+            <input type="tel" id="telefone" name="telefone" required placeholder="(XX) XXXXX-XXXX" class="w-full px-4 py-2 border border-grayx-300 dark:border-grayx-700 rounded-lg bg-white dark:bg-grayx-900 text-grayx-900 dark:text-grayx-50 focus:ring-accent focus:border-accent transition-all duration-150">
+          </div>
+          <div>
+            <label for="endereco" class="block text-sm font-medium mb-1">Endereço de Retirada</label>
+            <input type="text" id="endereco" name="endereco" required placeholder="Rua, Número, Bairro, Cidade - Estado" class="w-full px-4 py-2 border border-grayx-300 dark:border-grayx-700 rounded-lg bg-white dark:bg-grayx-900 text-grayx-900 dark:text-grayx-50 focus:ring-accent focus:border-accent transition-all duration-150">
+          </div>
+          <div class="flex justify-end items-center pt-4">
+            <p id="success-message" class="text-accent font-medium mr-4 hidden">Recurso cadastrado com sucesso!</p>
+            <button type="submit" id="submit-button" class="bg-accent text-white px-8 py-3 rounded-lg hover:bg-accent/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-all duration-200 disabled:bg-grayx-300 dark:disabled:bg-grayx-700">Cadastrar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-grayx-200 dark:bg-grayx-900 border-t border-grayx-200 dark:border-grayx-700 text-grayx-600 dark:text-grayx-400 text-center py-4 mt-auto">
+    <p class="text-sm">&copy; 2025 ReMarket Sustentável — Um futuro mais verde 🌱</p>
+  </footer>
+
+  <script>
+    // Navbar móvel igual dashboard (adicione se for usar o menu colapsável)
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const mobileNavbar = document.getElementById('mobile-navbar');
+    mobileMenuToggle?.addEventListener('click', () => {
+      mobileNavbar.classList.toggle('hidden');
+    });
+    window.addEventListener('scroll', () => { mobileNavbar?.classList.add('hidden'); });
+
+    // Toggle tema escuro/claro igual dashboard
+    const themeToggle = document.getElementById("theme-toggle");
+    const root = document.documentElement;
+    const applyTheme = (mode) => {
+      if (mode === 'dark') root.classList.add('dark');
+      else root.classList.remove('dark');
+      localStorage.setItem('theme', mode);
+    };
+    const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme(savedTheme);
+    themeToggle?.addEventListener('click', () => {
+      const now = root.classList.contains('dark') ? 'light' : 'dark';
+      applyTheme(now);
+    });
+  </script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCexikls640kZgxsknXUQpHZiNEPwRf4xg",
+      authDomain: "encurta-c3642.firebaseapp.com",
+      projectId: "encurta-c3642",
+      storageBucket: "encurta-c3642.firebasestorage.app",
+      messagingSenderId: "365232410104",
+      appId: "1:365232410104:web:d67b449427153593ec5a0d",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth();
+
+    const registerForm = document.getElementById('register-form');
+    const successMessage = document.getElementById('success-message');
+    const submitButton = document.getElementById('submit-button');
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+          alert("Você precisa estar logado para cadastrar um recurso. Redirecionando para o login...");
+          window.location.href = "login.html";
+      }
+    });
+
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      submitButton.disabled = true;
+      submitButton.textContent = 'Enviando...';
+
+      const user = auth.currentUser;
+      if (!user) {
+        alert("Sessão expirada. Faça o login novamente.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      const formData = new FormData(registerForm);
+      const imagens = [
+          formData.get('imagem1'),
+          formData.get('imagem2'),
+          formData.get('imagem3'),
+          formData.get('imagem4')
+      ].filter(url => url && url.trim() !== '');
+
+      const novoRecurso = {
+          nome: formData.get('nome'),
+          descricao: formData.get('descricao'),
+          categoria: formData.get('categoria'),
+          tipo: formData.get('tipo'), // Aluguel ou Venda
+          valor: parseFloat(formData.get('valor')) || 0,
+          quantidade: parseInt(formData.get('quantidade')) || 1,
+          telefone: formData.get('telefone'),
+          endereco: formData.get('endereco'),
+          imagens: imagens.length > 0 ? imagens : ['https://via.placeholder.com/400x300.png?text=Sem+Imagem'],
+          createdAt: serverTimestamp(),
+          usuarioId: user.uid,
+          userName: user.displayName || "Anônimo",
+          userPhoto: user.photoURL || `https://ui-avatars.com/api/?name=${(user.displayName || "A")[0]}&background=a3e635&color=14532d`
+      };
+
+      try {
+          await addDoc(collection(db, "produtos"), novoRecurso);
+          successMessage.classList.remove('hidden');
+          registerForm.reset();
+          setTimeout(() => {
+              successMessage.classList.add('hidden');
+              window.location.href = 'index.html';
+          }, 2000);
+      } catch (error) {
+          alert("Erro ao cadastrar recurso: " + error.message);
+          console.error("Erro: ", error);
+          submitButton.disabled = false;
+          submitButton.textContent = 'Cadastrar';
+      }
+    });
+  </script>
+</body>
+</html>

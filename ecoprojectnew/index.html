@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eco Tech Hub</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            darkbg: "#18181b",
+            grayx: {
+              50: "#f3f4f6",
+              100: "#e5e7eb",
+              200: "#d1d5db",
+              300: "#9ca3af",
+              400: "#6b7280",
+              500: "#4b5563",
+              600: "#374151",
+              700: "#23272F",
+              800: "#18181b",
+              900: "#111112"
+            },
+            accent: "#38bdf8"
+          },
+          boxShadow: {
+            soft: '0 10px 40px -10px rgba(0,0,0,0.23)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #23272f; }
+    ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #374151; }
+    #header-avatar { object-fit: cover; }
+  </style>
+</head>
+<body class="bg-white dark:bg-darkbg text-grayx-900 dark:text-grayx-50 min-h-screen">
+  <!-- Topbar / Navbar responsiva -->
+  <header class="w-full fixed top-0 left-0 z-50 bg-white/90 dark:bg-grayx-900/95 shadow-sm border-b border-grayx-200 dark:border-grayx-700 backdrop-blur-xl">
+    <nav class="container mx-auto max-w-7xl px-4 flex items-center justify-between h-16">
+      <div class="flex items-center gap-3">
+        <!-- Logo -->
+        <span class="text-xl">🌐</span>
+        <span class="text-xl font-bold tracking-wider text-grayx-900 dark:text-grayx-50 ml-2">Eco Tech Hub</span>
+      </div>
+      <div class="hidden md:flex gap-2 flex-wrap items-center">
+        <a href="index.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:text-grayx-900 hover:bg-grayx-100 dark:hover:text-grayx-50 dark:hover:bg-grayx-700 transition font-semibold">Home</a>
+        <a href="dashboard.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:text-grayx-900 hover:bg-grayx-100 dark:hover:text-grayx-50 dark:hover:bg-grayx-700 transition">Dashboard</a>
+        <a href="register.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:text-grayx-900 hover:bg-grayx-100 dark:hover:text-grayx-50 dark:hover:bg-grayx-700 transition">Cadastrar Recurso</a>
+        <a href="profile.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:text-grayx-900 hover:bg-grayx-100 dark:hover:text-grayx-50 dark:hover:bg-grayx-700 transition">Perfil</a>
+        <a href="conversas.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:text-grayx-900 hover:bg-grayx-100 dark:hover:text-grayx-50 dark:hover:bg-grayx-700 transition">Minhas Conversas</a>
+      </div>
+      <div class="flex items-center ml-auto md:ml-0 gap-2">
+        <a href="profile.html" class="flex-shrink-0" title="Perfil">
+          <img id="header-avatar" class="w-9 h-9 rounded-full bg-grayx-200 dark:bg-grayx-700 border border-grayx-300 dark:border-grayx-600 shadow transition hover:ring-2 hover:ring-accent" src="https://ui-avatars.com/api/?background=eee&color=23272F&name=User" alt="Usuário" referrerpolicy="no-referrer">
+        </a>
+        <button id="theme-toggle" class="p-2 rounded hover:bg-grayx-200 dark:hover:bg-grayx-700 text-grayx-400 dark:text-grayx-300" title="Mudar tema">
+          <i class="fa-solid fa-sun dark:hidden"></i>
+          <i class="fa-solid fa-moon hidden dark:inline"></i>
+        </button>
+        <button id="mobile-menu-toggle" class="md:hidden p-2 text-grayx-600 dark:text-grayx-300 hover:bg-grayx-200 dark:hover:bg-grayx-700 rounded ml-1" title="Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </nav>
+    <div id="mobile-navbar" class="fixed top-16 left-0 w-full bg-white/97 dark:bg-grayx-900/98 border-b border-grayx-200 dark:border-grayx-700 shadow-xl z-40 flex-col gap-1 hidden md:hidden pb-4">
+      <a href="index.html" class="block px-6 py-4 text-grayx-600 dark:text-grayx-200 hover:text-grayx-900 hover:bg-grayx-100 dark:hover:text-grayx-50 dark:hover:bg-grayx-700">Home</a>
+      <a href="dashboard.html" class="block px-6 py-4 text-grayx-600 dark:text-grayx-200 hover:text-grayx-900 hover:bg-grayx-100 dark:hover:text-grayx-50 dark:hover:bg-grayx-700">Dashboard</a>
+      <a href="register.html" class="block px-6 py-4 text-grayx-600 dark:text-grayx-200 hover:text-grayx-900 hover:bg-grayx-100 dark:hover:text-grayx-50 dark:hover:bg-grayx-700">Cadastrar Recurso</a>
+      <a href="profile.html" class="block px-6 py-4 text-grayx-600 dark:text-grayx-200 hover:text-grayx-900 hover:bg-grayx-100 dark:hover:text-grayx-50 dark:hover:bg-grayx-700">Perfil</a>
+      <a href="conversas.html" class="block px-6 py-4 text-grayx-600 dark:text-grayx-200 hover:text-grayx-900 hover:bg-grayx-100 dark:hover:text-grayx-50 dark:hover:bg-grayx-700">Minhas Conversas</a>
+    </div>
+  </header>
+
+  <main class="flex flex-col items-center justify-center min-h-screen w-full pt-32 px-3">
+    <h1 class="mb-6 text-3xl sm:text-4xl font-extrabold text-center tracking-wide">
+      Eco Tech Hub
+    </h1>
+    <form class="w-full max-w-xl flex flex-col gap-4 items-stretch" onsubmit="return false;">
+      <div class="w-full relative flex items-stretch group bg-grayx-100 dark:bg-grayx-800 border border-grayx-300 dark:border-grayx-700 rounded-full shadow-soft sm:shadow-lg transition">
+        <span class="absolute left-5 top-1/2 -translate-y-1/2 text-xl text-grayx-400 pointer-events-none">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </span>
+        <input
+          id="search-input"
+          type="text"
+          autocomplete="off"
+          placeholder="Buscar no Eco Tech Hub..."
+          class="flex-1 pr-4 pl-12 py-4 bg-transparent rounded-full text-lg text-grayx-900 dark:text-grayx-100 focus:outline-none focus:ring-2 focus:ring-accent placeholder-grayx-400"
+          aria-label="Buscar no Eco Tech Hub" />
+      </div>
+    </form>
+    <section id="products" class="w-full max-w-6xl mx-auto mt-10 px-2 sm:px-0 pb-10">
+      <div id="product-loader" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="bg-grayx-100 dark:bg-grayx-800 rounded-2xl shadow-md animate-pulse border border-grayx-300 dark:border-grayx-700">
+          <div class="bg-grayx-200 dark:bg-grayx-700 aspect-[4/3] rounded-t-2xl"></div>
+          <div class="p-5">
+            <div class="h-6 bg-grayx-200 dark:bg-grayx-700 rounded w-3/4 mb-3"></div>
+            <div class="h-4 bg-grayx-200 dark:bg-grayx-700 rounded w-full mb-2"></div>
+            <div class="h-4 bg-grayx-200 dark:bg-grayx-700 rounded w-1/2"></div>
+          </div>
+        </div>
+      </div>
+      <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-4" aria-live="polite" aria-relevant="additions removals"></div>
+    </section>
+  </main>
+  <footer class="bg-grayx-100 dark:bg-grayx-900 text-grayx-500 dark:text-grayx-400 text-center py-6 mt-auto">
+    <p class="text-sm">&copy; 2025 Eco Tech Hub — Um futuro inteligente 🌐</p>
+  </footer>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, onSnapshot, query, orderBy, getDocs, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyCexikls640kZgxsknXUQpHZiNEPwRf4xg",
+      authDomain: "encurta-c3642.firebaseapp.com",
+      projectId: "encurta-c3642",
+      storageBucket: "encurta-c3642.appspot.com",
+      messagingSenderId: "365232410104",
+      appId: "1:365232410104:web:d67b449427153593ec5a0d",
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // Mobile menu
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const mobileNavbar = document.getElementById('mobile-navbar');
+    mobileMenuToggle?.addEventListener('click', () => {
+      mobileNavbar.classList.toggle('hidden');
+    });
+    window.addEventListener('scroll', () => { mobileNavbar?.classList.add('hidden'); });
+
+    // Tema toggle
+    const themeToggle = document.getElementById("theme-toggle");
+    const root = document.documentElement;
+    const applyTheme = (mode) => {
+      if (mode === 'dark') root.classList.add('dark');
+      else root.classList.remove('dark');
+      localStorage.setItem('theme', mode);
+    };
+    const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme(savedTheme);
+    themeToggle?.addEventListener('click', () => {
+      const now = root.classList.contains('dark') ? 'light' : 'dark';
+      applyTheme(now);
+    });
+
+    // Avatar
+    const headerAvatar = document.getElementById('header-avatar');
+    function setUserPhotoURL(url) {
+      if (url) {
+        headerAvatar.src = url;
+      } else {
+        headerAvatar.src = 'https://ui-avatars.com/api/?background=eee&color=23272F&name=User';
+      }
+    }
+
+    // Função para buscar chats do usuário, focado em produtoId único
+    async function buscarChatsDoUsuario(uid) {
+      const chatsRef = collection(db, "chats");
+      const q = query(chatsRef, where("participants", "array-contains", uid));
+      const snapshot = await getDocs(q);
+      const chatsAbertos = {};
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.produtoId && !chatsAbertos[data.produtoId]) { // Garante único por produtoId
+          chatsAbertos[data.produtoId] = doc.id;
+        }
+      });
+      return chatsAbertos;
+    }
+
+    // Monta card de produto
+    function createImageCarousel(images, productName) {
+      const safeName = productName || 'Produto';
+      const imgs = Array.isArray(images) ? images.filter(Boolean) : [];
+      if (imgs.length === 0) {
+        return `<div class="aspect-[4/3] overflow-hidden rounded-t-2xl bg-grayx-200 dark:bg-grayx-700 flex items-center justify-center">
+          <i class="fa-regular fa-image text-3xl text-grayx-400"></i></div>`;
+      }
+      if (imgs.length === 1) {
+        return `<div class="aspect-[4/3] overflow-hidden rounded-t-2xl bg-grayx-100 dark:bg-grayx-800">
+          <img src="${imgs[0]}" alt="Imagem de ${safeName}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/cbd5e1?text=Imagem+Indisponível';" />
+        </div>`;
+      }
+      return `<div class="aspect-[4/3] overflow-hidden rounded-t-2xl bg-grayx-100 dark:bg-grayx-800">
+        <img src="${imgs[0]}" alt="Imagem de ${safeName}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/cbd5e1?text=Imagem+Indisponível';" />
+      </div>`;
+    }
+
+    // Produtos
+    let loadedProducts = [], currentUser = null, chatsAbertos = {};
+    const productList = document.getElementById("product-list");
+    const productLoader = document.getElementById("product-loader");
+    const searchInput = document.getElementById("search-input");
+
+    // Renderiza produtos com lógica de chat por produto
+    function renderProdutos(filtro = "") {
+      const termo = filtro.toLowerCase().trim();
+      const filtrados = loadedProducts.filter((p) => {
+        const nome = (p.nome || "").toLowerCase();
+        const desc = (p.descricao || "").toLowerCase();
+        const cat = (p.categoria || "").toLowerCase();
+        return (nome.includes(termo) || desc.includes(termo) || cat.includes(termo));
+      });
+      productList.innerHTML = "";
+      if (filtrados.length === 0) {
+        productList.innerHTML = `
+          <div class="col-span-full">
+            <div class="text-center py-16 rounded-2xl border border-dashed border-grayx-300 dark:border-grayx-700 bg-grayx-50 dark:bg-grayx-900/90">
+              <div class="mx-auto w-12 h-12 rounded-full bg-grayx-200 dark:bg-grayx-800 flex items-center justify-center text-grayx-400 mb-3">
+                <i class="fa-regular fa-folder-open"></i>
+              </div>
+              <p class="text-grayx-400 dark:text-grayx-300">Nenhum recurso encontrado com sua busca.</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+      filtrados.forEach((p) => {
+        const imagens = Array.isArray(p.imagens) ? p.imagens.filter(Boolean) : (p.imagem ? [p.imagem] : []);
+        const userName = p.userName || "Usuário Anônimo";
+        const precoFormatado = (p.valor && p.valor > 0) ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.valor) : 'A combinar';
+        const card = document.createElement("div");
+        card.className = "bg-grayx-50 dark:bg-grayx-800 rounded-2xl shadow-md hover:shadow-2xl transition-shadow duration-300 flex flex-col overflow-hidden border border-grayx-300 dark:border-grayx-700";
+        const chatId = chatsAbertos[p.id];
+        let chatBtn = '';
+        if (chatId) {
+          chatBtn = `
+            <button
+              onclick="window.location.href='chat.html?chatId=${chatId}'"
+              class="w-full mt-3 px-4 py-2 bg-accent text-white rounded-lg font-semibold hover:bg-accent/80 flex items-center justify-center gap-2 transition">
+              <i class="fa-solid fa-message"></i> Abrir conversa
+            </button>
+          `;
+        } else {
+          chatBtn = `
+            <button
+              onclick="iniciarConversa('${p.id}', '${p.userName || ''}', '${p.nome || ''}', '${p.usuarioId || ''}')"
+              class="w-full mt-3 px-4 py-2 bg-accent text-white rounded-lg font-semibold hover:bg-accent/80 flex items-center justify-center gap-2 transition ${!p.usuarioId ? 'opacity-50 cursor-not-allowed' : ''}"
+              ${!p.usuarioId ? 'disabled' : ''}>
+              <i class="fa-solid fa-comments"></i> Conversar no chat
+            </button>
+          `;
+        }
+        card.innerHTML = `
+          ${createImageCarousel(imagens, p.nome)}
+          <div class="p-5 flex flex-col flex-grow">
+            <div class="flex-grow">
+              <div class="flex flex-wrap gap-2 mb-3">
+                <span class="bg-grayx-200 dark:bg-grayx-900 text-grayx-700 dark:text-grayx-100 text-xs font-semibold px-3 py-1 rounded-full">${p.categoria || "Sem categoria"}</span>
+                <span class="bg-grayx-100 dark:bg-grayx-700 text-grayx-500 dark:text-grayx-300 text-xs font-semibold px-3 py-1 rounded-full">${p.tipo || "Sem tipo"}</span>
+              </div>
+              <h4 class="text-lg font-bold text-grayx-900 dark:text-grayx-50 mb-1 truncate" title="${p.nome || "Sem nome"}">${p.nome || "Sem nome"}</h4>
+              <p class="text-sm text-grayx-500 dark:text-grayx-400 mb-4 line-clamp-2">${p.descricao || "Sem descrição disponível."}</p>
+              <div class="text-sm text-grayx-500 dark:text-grayx-400 space-y-2 pt-3 mt-3 border-t border-grayx-200 dark:border-grayx-700">
+                <div class="flex items-center gap-2" title="Anunciante">
+                  <i class="fa-solid fa-user fa-fw text-grayx-400 dark:text-grayx-500"></i>
+                  <span>${userName}</span>
+                </div>
+                <div class="flex items-center gap-2" title="Quantidade">
+                  <i class="fa-solid fa-box fa-fw text-grayx-400 dark:text-grayx-500"></i>
+                  <span>${p.quantidade || "1"} unidade(s)</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-auto pt-4 border-t border-grayx-200 dark:border-grayx-700">
+              <p class="text-xl font-extrabold text-grayx-900 dark:text-grayx-50">${precoFormatado}</p>
+              ${chatBtn}
+            </div>
+          </div>
+        `;
+        productList.appendChild(card);
+      });
+    }
+
+    // Função global para iniciar conversa – nova se produto diferente
+    window.iniciarConversa = async function(produtoId, userName, produto, usuarioId) {
+      if (!usuarioId) {
+        alert('Chat indisponível: informações do anunciante incompletas. Tenta outro produto!');
+        return;
+      }
+      if (!currentUser) {
+        alert('Ei, loga aí pra bater papo! Senão não rola iniciar chat. 😅');
+        return;
+      }
+      if (usuarioId === currentUser.uid) {
+        alert('Não dá pra conversar consigo mesmo, né? Vai que vira monólogo! 😂');
+        return;
+      }
+      // Check extra: se já tem chat pro MESMO produto, redireciona em vez de criar novo
+      if (chatsAbertos[produtoId]) {
+        window.location.href = `chat.html?chatId=${chatsAbertos[produtoId]}`;
+        return;
+      }
+      // Senão, inicia novo chat pro produto
+      const params = new URLSearchParams({ nome: userName, produto, para: usuarioId, produtoId });
+      window.open(`chat.html?${params.toString()}`, '_blank');
+    };
+
+    // Busca e renderização
+    searchInput.addEventListener("input", () => renderProdutos(searchInput.value));
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        setUserPhotoURL(user.photoURL);
+        chatsAbertos = await buscarChatsDoUsuario(user.uid);
+        renderProdutos(searchInput.value);
+      } else {
+        try {
+          const userCredential = await signInAnonymously(auth);
+          currentUser = userCredential.user;
+          setUserPhotoURL(null);
+          chatsAbertos = {};
+          renderProdutos(searchInput.value);
+        } catch (error) {
+          setUserPhotoURL(null);
+          console.error("Erro no login anônimo:", error);
+        }
+      }
+    });
+    const ref = query(collection(db, "produtos"), orderBy("createdAt", "desc"));
+    onSnapshot(ref, (snapshot) => {
+      productLoader.style.display = 'none';
+      loadedProducts = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      renderProdutos(searchInput.value);
+    }, (error) => {
+      console.error('Erro ao carregar produtos:', error);
+      productLoader.style.display = 'none';
+      productList.innerHTML = `<p class="text-red-500 col-span-full text-center py-10">Erro ao carregar recursos. Tente novamente mais tarde.</p>`;
+    });
+  </script>
+</body>
+</html>

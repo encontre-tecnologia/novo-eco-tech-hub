@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minhas Conversas - Eco Tech Hub</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            darkbg: "#18181b",
+            grayx: {
+              50: "#f3f4f6",
+              100: "#e5e7eb",
+              200: "#d1d5db",
+              300: "#9ca3af",
+              400: "#6b7280",
+              500: "#4b5563",
+              600: "#374151",
+              700: "#23272F",
+              800: "#18181b",
+              900: "#111112"
+            },
+            accent: "#38bdf8"
+          },
+          boxShadow: {
+            soft: '0 10px 40px -10px rgba(0,0,0,0.23)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #23272f; }
+    ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #374151; }
+    #header-avatar { object-fit: cover; }
+    /* Mobile menu overlay */
+    @media (max-width: 767px) {
+      #mobile-navbar.visible {
+        display: flex !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-white dark:bg-darkbg text-grayx-900 dark:text-grayx-50 min-h-screen flex flex-col">
+
+  <!-- HEADER -->
+  <header class="w-full fixed top-0 left-0 z-50 bg-white/90 dark:bg-grayx-900/95 shadow-sm border-b border-grayx-200 dark:border-grayx-700 backdrop-blur-xl">
+    <nav class="container mx-auto max-w-7xl px-4 flex items-center justify-between h-16">
+      <div class="flex items-center gap-3">
+        <span class="text-xl">🌐</span>
+        <span class="text-xl font-bold tracking-wider text-grayx-900 dark:text-grayx-50 ml-2">Eco Tech Hub</span>
+      </div>
+      <div class="hidden md:flex gap-2 flex-wrap items-center">
+        <a href="index.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition font-semibold">Home</a>
+        <a href="dashboard.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Dashboard</a>
+        <a href="register.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Cadastrar Recurso</a>
+        <a href="profile.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Perfil</a>
+        <a href="conversas.html" class="px-4 py-2 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Minhas Conversas</a>
+      </div>
+      <div class="flex items-center ml-auto md:ml-0 gap-2">
+        <a href="profile.html" class="flex-shrink-0" title="Perfil">
+          <img id="header-avatar" class="w-9 h-9 rounded-full bg-grayx-200 dark:bg-grayx-700 border border-grayx-300 dark:border-grayx-600 shadow transition hover:ring-2 hover:ring-accent" src="https://ui-avatars.com/api/?background=eee&color=23272F&name=User" alt="Usuário" referrerpolicy="no-referrer">
+        </a>
+        <button id="theme-toggle" class="p-2 rounded hover:bg-grayx-200 dark:hover:bg-grayx-700 text-grayx-400 dark:text-grayx-300" title="Mudar tema">
+          <i class="fa-solid fa-sun dark:hidden"></i>
+          <i class="fa-solid fa-moon hidden dark:inline"></i>
+        </button>
+        <button id="mobile-menu-toggle" class="md:hidden p-2 text-grayx-600 dark:text-grayx-300 hover:bg-grayx-200 dark:hover:bg-grayx-700 rounded ml-1" title="Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </nav>
+    <!-- MOBILE MENU: overlay que cobre só o topo, moderno, search + links -->
+<div id="mobile-navbar" class="fixed top-16 left-0 w-full bg-white dark:bg-grayx-900 border-b border-grayx-200 dark:border-grayx-700 shadow-xl z-40 flex-col gap-2 px-2 py-4 hidden">
+      <a href="index.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Home</a>
+      <a href="dashboard.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Dashboard</a>
+      <a href="register.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Cadastrar Recurso</a>
+      <a href="profile.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Perfil</a>
+      <a href="conversas.html" class="block px-6 py-3 rounded text-grayx-600 dark:text-grayx-200 hover:bg-grayx-100 dark:hover:bg-grayx-700 transition">Minhas Conversas</a>
+    </div>
+  </header>
+
+
+  <div class="pt-20"></div>
+
+  <!-- Conteúdo principal -->
+  <main class="flex-grow container mx-auto px-4 sm:px-6 py-10 w-full max-w-3xl">
+    <h1 class="text-2xl sm:text-3xl font-semibold text-grayx-900 dark:text-accent mb-4">Minhas Conversas</h1>
+    <div class="relative mb-6">
+      <input type="text" id="search-conversas" placeholder="Buscar por nome ou recurso..." class="w-full px-4 py-3 rounded-xl bg-grayx-100 dark:bg-grayx-700 text-grayx-900 dark:text-grayx-50 border border-transparent focus:border-accent focus:ring-2 focus:ring-accent/50 outline-none transition-all duration-300 placeholder-grayx-400 dark:placeholder-grayx-300">
+      <i class="fa-solid fa-search absolute right-4 top-1/2 transform -translate-y-1/2 text-grayx-400 dark:text-grayx-300"></i>
+    </div>
+    <div id="conversas-list" class="space-y-4">
+      <div id="loading-placeholder">
+        <div class="bg-white dark:bg-grayx-800 p-4 rounded-2xl shadow flex items-center space-x-4 border border-transparent dark:border-accent/40 animate-pulse">
+          <div class="h-12 w-12 bg-grayx-200 dark:bg-grayx-700 rounded-full"></div>
+          <div class="flex-1 space-y-2">
+            <div class="h-4 bg-grayx-200 dark:bg-grayx-700 rounded w-1/3"></div>
+            <div class="h-3 bg-grayx-200 dark:bg-grayx-700 rounded w-2/3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-grayx-200 dark:bg-grayx-900 border-t border-grayx-200 dark:border-grayx-700 text-grayx-600 dark:text-grayx-400 text-center py-4 mt-auto">
+    <p class="text-sm">&copy; 2025 Eco Tech Hub — Um futuro mais verde 🌱</p>
+  </footer>
+
+  <!-- Scripts header: tema, menu mobile, avatar -->
+  <script>
+    // Tema toggle
+    const themeToggle = document.getElementById("theme-toggle");
+    const root = document.documentElement;
+    const applyTheme = (mode) => {
+      if (mode === 'dark') root.classList.add('dark');
+      else root.classList.remove('dark');
+      localStorage.setItem('theme', mode);
+    };
+    const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme(savedTheme);
+    themeToggle?.addEventListener('click', () => {
+      const now = root.classList.contains('dark') ? 'light' : 'dark';
+      applyTheme(now);
+    });
+
+    // Mobile menu
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const mobileNavbar = document.getElementById('mobile-navbar');
+    mobileMenuToggle?.addEventListener('click', () => {
+      mobileNavbar.classList.toggle('hidden');
+      mobileNavbar.classList.toggle('visible');
+    });
+    window.addEventListener('scroll', () => { mobileNavbar?.classList.add('hidden'); mobileNavbar?.classList.remove('visible'); });
+  </script>
+
+  <!-- Firebase conversas -->
+  <script type="module">
+    function getFakeUnreadCount(chatId) {
+  // só para testar, badge verde aleatório
+  if (Math.random() < 0.5) return Math.floor(Math.random()*4)+1;
+  return 0;
+}
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCexikls640kZgxsknXUQpHZiNEPwRf4xg",
+      authDomain: "encurta-c3642.firebaseapp.com",
+      projectId: "encurta-c3642",
+      storageBucket: "encurta-c3642.appspot.com",
+      messagingSenderId: "365232410104",
+      appId: "1:365232410104:web:d67b449427153593ec5a0d",
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const conversasList = document.getElementById("conversas-list");
+    const loadingPlaceholder = document.getElementById("loading-placeholder");
+    const searchInput = document.getElementById("search-conversas");
+    const headerAvatar = document.getElementById("header-avatar");
+
+    let conversasData = []; // Para filtro
+
+function renderConversa(docData, chatId, currentUid, unreadCount = 0) {
+  const participants = docData.participants || [];
+  const otherUid = participants.find(uid => uid !== currentUid);
+  if (!otherUid) return;
+  const usuarioInfo = docData.usuariosInfo?.[otherUid] || {};
+  const nomeOutro = usuarioInfo.nome || "Usuário";
+  const fotoOutro = usuarioInfo.foto || `https://ui-avatars.com/api/?background=eee&color=23272F&name=${(nomeOutro[0]||'U')}`;
+  const produtoNome = docData.produtoNome || "";
+  const produtoId = docData.produtoId || "";
+  const lastMsg = docData.lastMessage || "Sem mensagens...";
+  const lastTime = docData.lastMessageTimestamp?.seconds
+    ? new Date(docData.lastMessageTimestamp.seconds * 1000).toLocaleDateString("pt-BR")
+    : "";
+
+  let badge = "";
+  if (unreadCount && unreadCount > 0) {
+    badge = `
+      <span class="absolute top-5 right-5 z-20">
+        <span class="flex items-center justify-center w-7 h-7 text-sm font-extrabold text-white bg-green-500 rounded-full shadow border-4 border-gray-900/70 dark:border-grayx-900 animate-bounce">
+          ${unreadCount}
+        </span>
+      </span>
+    `;
+  }
+
+  const card = document.createElement("a");
+  card.className = "relative bg-white dark:bg-grayx-800 border border-grayx-500/30 dark:border-accent/30 rounded-2xl shadow flex items-center space-x-4 p-4 hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer";
+  if (produtoId && produtoNome) {
+    card.href = `chat.html?para=${otherUid}&produtoId=${produtoId}&produto=${encodeURIComponent(produtoNome)}`;
+    card.addEventListener("click", () => marcarComoLido(chatId, currentUid)); // Marcar como lido!
+  } else {
+    card.href = "#";
+    card.classList.add("pointer-events-none", "opacity-60");
+    card.title = "Esta conversa não possui dados de produto e não pode ser aberta!";
+  }
+  card.innerHTML = `
+    <img src="${fotoOutro}" alt="Avatar" class="w-12 h-12 rounded-full object-cover border-2 border-white dark:border-accent shadow-sm"/>
+    <div class="flex flex-col flex-1 min-w-0">
+      <div class="flex items-center justify-between gap-4">
+        <span class="font-bold text-grayx-900 dark:text-accent truncate">${nomeOutro}</span>
+        <span class="text-xs text-grayx-400">${lastTime}</span>
+      </div>
+      <span class="text-accent/90 text-sm font-medium truncate max-w-full">${produtoNome || "Recurso não especificado"}</span>
+      <div class="flex items-center">
+        <span class="text-grayx-500 dark:text-grayx-300 truncate text-ellipsis overflow-hidden">${lastMsg}</span>
+      </div>
+    </div>
+    ${badge}
+  `;
+  return card;
+}
+// Marcar como lido ao clicar:
+async function marcarComoLido(chatId, userUid) {
+  // (Firestore)
+  try {
+    const chatRef = firebase.firestore().collection("chats").doc(chatId);
+    await chatRef.update({
+      [`unreadCount.${userUid}`]: 0
+    });
+  } catch (e) {
+    console.warn("Não foi possível marcar como lido:", e);
+  }
+}
+
+function filterAndRenderConversas(searchTerm) {
+  conversasList.innerHTML = "";
+  // Garante que filtered é definido na função!
+  const filtered = conversasData.filter(data => {
+    const nome = data.nomeOutro?.toLowerCase() || "";
+    const produto = data.produtoNome?.toLowerCase() || "";
+    return nome.includes(searchTerm.toLowerCase()) || produto.includes(searchTerm.toLowerCase());
+  });
+  if (filtered.length === 0) {
+    conversasList.innerHTML = `
+      <div class="text-center py-16 px-6 bg-white dark:bg-grayx-800 rounded-xl shadow-lg border border-transparent dark:border-accent/40">
+        <svg class="mx-auto h-20 w-20 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+        <h3 class="mt-6 text-2xl font-extrabold text-accent">Nenhuma Conversa Encontrada</h3>
+        <p class="mt-4 text-lg text-grayx-400">Tente buscar por outro nome ou recurso!</p>
+      </div>`;
+    return;
+  }
+  // Aqui 'filtered' está disponível!
+  filtered.forEach(data => {
+    // Pega unreadCount real se tiver, ou 0 como fallback
+    const unreadCount = (data.unreadCount !== undefined) ? data.unreadCount : 0;
+    const card = renderConversa(data.docData, data.chatId, data.currentUid, unreadCount);
+    conversasList.appendChild(card);
+  });
+
+
+    }
+
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        signInAnonymously(auth).catch(err => console.error("Erro no login anônimo:", err));
+        return;
+      }
+      if (user.photoURL) {
+        headerAvatar.src = user.photoURL;
+      } else if (user.displayName) {
+        headerAvatar.src = `https://ui-avatars.com/api/?background=eee&color=23272F&name=${user.displayName[0]}`;
+      }
+      const userUid = user.uid;
+      const chatsRef = collection(db, 'chats');
+      const q = query(chatsRef, where("participants", "array-contains", userUid), orderBy("lastMessageTimestamp", "desc"));
+      onSnapshot(q, (snapshot) => {
+        if (loadingPlaceholder) {
+          loadingPlaceholder.style.display = 'none';
+        }
+        conversasData = [];
+        if (snapshot.empty) {
+          filterAndRenderConversas("");
+          return;
+        }
+snapshot.forEach(docSnap => {
+  const docData = docSnap.data();
+  const participants = docData.participants || [];
+  const otherUid = participants.find(uid => uid !== userUid);
+  const usuarioInfo = docData.usuariosInfo?.[otherUid] || {};
+  const nomeOutro = usuarioInfo.nome || "Usuário";
+  // Aqui uso demo. O ideal é puxar do Firestore um docData.unreadCount[userUid] ou similar:
+const unreadCount = (docData.unreadCount && docData.unreadCount[currentUid]) ? docData.unreadCount[currentUid] : 0;
+conversasData.push({
+  docData,
+  chatId: docSnap.id,
+  currentUid: userUid,
+  nomeOutro,
+  produtoNome: docData.produtoNome || "",
+  unreadCount
+});
+});
+
+        filterAndRenderConversas(searchInput.value);
+      }, error => {
+        console.error("Erro detalhado Firestore:", error);
+        conversasList.innerHTML = `<p class="text-red-500 text-center py-8">Erro ao carregar conversas:<br><span class="text-xs">${error.message}</span></p>`;
+      });
+    });
+    searchInput.addEventListener('input', () => {
+      filterAndRenderConversas(searchInput.value);
+    });
+
+    // Filtro de links no menu mobile (só demo, esconde links que não batem)
+    const mobileMenuSearch = document.getElementById('mobile-menu-search');
+    if (mobileMenuSearch) {
+      mobileMenuSearch.addEventListener('input', e => {
+        const term = (e.target.value || '').toLowerCase();
+        document.querySelectorAll('#mobile-navbar a').forEach(link => {
+          if (link.textContent.toLowerCase().includes(term) || link.tagName !== 'A') {
+            link.style.display = "";
+          } else {
+            link.style.display = "none";
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>

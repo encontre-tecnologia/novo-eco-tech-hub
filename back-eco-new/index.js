@@ -1,504 +1,458 @@
-import { elements } from "./ui/domElements.js";
-import { showModal, generateReceipt } from "./ui/modalHandler.js";
-import {
-  setRendererData,
-  renderProductList,
-  renderRentalHistory,
-  renderSelectedItems,
-  renderProductSelection,
-  updateFinancialSummaries,
-  updateRentalFormSummary,
-} from "./ui/renderer.js";
-import * as auth from "./services/authService.js";
-import * as db from "./services/firestoreService.js";
+const express = require("express");
+const WebSocket = require("ws");
+const admin = require("firebase-admin");
+const cors = require("cors");
 
-let products = [];
-let rentals = [];
-let selectedProductsForRental = {};
-let selectedProductsForEdit = {};
-let currentEditRentalId = null;
-let unsubscribeProducts = null;
-let unsubscribeRentals = null;
+// Firebase setup
+const serviceAccount = require("./encurta-c3642-firebase-adminsdk-fbsvc-a8b869d0d1.json");
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+const db = admin.firestore();
 
-const init = () => {
-  auth.onAuthStateChanged((user) => {
-    if (user) handleLogin();
-    else handleLogout();
-  });
-  setupEventListeners();
-};
+const app = express();
+app.use(cors());
+app.use(express.json()); // Adicionado pra parsear JSON no body dos POSTs
 
-const handleLogin = () => {
-  const user = firebase.auth().currentUser;
-  if (!user) return;
+app.get("/health", (req, res) => res.status(200).send("Servidor OK"));
 
-  elements.userName.textContent = user.displayName || user.email;
-  elements.appContainer.classList.remove("hidden");
-  elements.loginContainer.classList.add("hidden");
-  elements.loadingOverlay.classList.add("hidden");
-  elements.authContainer.classList.remove("hidden");
+// NOVO ENDPOINT: Cria ou retorna chat existente baseado em participants e produtoId
+app.post("/create-chat", async (req, res) => {
+  const { participants, produtoId, produtoNome, usuariosInfo } = req.body;
 
-  if (unsubscribeProducts) unsubscribeProducts();
-  if (unsubscribeRentals) unsubscribeRentals();
+  if (!participants || participants.length < 2 || !produtoId) {
+    return res.status(400).json({
+      error:
+        "Faltam dados: participants (array com pelo menos 2 UIDs), produtoId obrigatório!",
+    });
+  }
 
-  unsubscribeProducts = db.onProductsChange((snapshot) => {
-    products = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    updateAppData();
-  });
+  try {
+    // Busca se já existe um chat com EXATAMENTE esses participants e produtoId
+    const chatsRef = db.collection("chats");
+    const snapshot = await chatsRef
+      .where("participants", "array-contains-any", participants)
+      .where("produtoId", "==", produtoId)
+      .get();
 
-  unsubscribeRentals = db.onRentalsChange((snapshot) => {
-    rentals = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    updateAppData();
-  });
-};
-
-const handleLogout = () => {
-  if (unsubscribeProducts) unsubscribeProducts();
-  if (unsubscribeRentals) unsubscribeRentals();
-
-  products = [];
-  rentals = [];
-  selectedProductsForRental = {};
-  elements.appContainer.classList.add("hidden");
-  elements.loginContainer.classList.remove("hidden");
-  elements.loadingOverlay.classList.add("hidden");
-  elements.authContainer.classList.add("hidden");
-  updateAppData();
-};
-
-const updateAppData = () => {
-  setRendererData(products, rentals);
-  renderProductList();
-  renderRentalHistory(elements.rentalSearchInput.value);
-  updateFinancialSummaries();
-  updateCreateRentalUI();
-};
-
-const updateCreateRentalUI = () => {
-  renderProductSelection(
-    elements.productSelectionContainer,
-    selectedProductsForRental,
-    null,
-    elements.rentalDateInput.value,
-    elements.returnDateInput.value
-  );
-  renderSelectedItems(
-    elements.selectedItemsContainer,
-    selectedProductsForRental,
-    null,
-    elements.rentalDateInput.value,
-    elements.returnDateInput.value
-  );
-  updateRentalFormSummary(selectedProductsForRental);
-};
-
-const updateEditRentalUI = () => {
-  renderProductSelection(
-    elements.editProductSelectionContainer,
-    selectedProductsForEdit,
-    currentEditRentalId,
-    elements.editRentalDateInput.value,
-    elements.editReturnDateInput.value
-  );
-  renderSelectedItems(
-    elements.editSelectedItemsContainer,
-    selectedProductsForEdit,
-    currentEditRentalId,
-    elements.editRentalDateInput.value,
-    elements.editReturnDateInput.value
-  );
-};
-
-const setupEventListeners = () => {
-  elements.googleLoginBtn.addEventListener("click", auth.signInWithGoogle);
-  elements.logoutBtn.addEventListener("click", auth.signOut);
-
-  elements.productForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const product = {
-      name: elements.productNameInput.value.trim(),
-      quantity: parseInt(elements.productQuantityInput.value),
-      price: parseFloat(elements.productPriceInput.value),
-    };
-    if (
-      !product.name ||
-      isNaN(product.quantity) ||
-      product.quantity <= 0 ||
-      isNaN(product.price) ||
-      product.price <= 0
-    ) {
-      showModal(
-        `<p class="text-red-400">Preencha todos os campos do produto corretamente.</p>`
-      );
-      return;
-    }
-    await db.addProduct(product);
-    showModal(`<p class="text-emerald-400">Produto salvo!</p>`);
-    elements.productForm.reset();
-  });
-
-  elements.productList.addEventListener("click", (e) => {
-    const editBtn = e.target.closest(".edit-product-btn");
-    const deleteBtn = e.target.closest(".delete-product-btn");
-
-    if (editBtn) {
-      const product = products.find((p) => p.id === editBtn.dataset.id);
-      elements.editProductIdInput.value = product.id;
-      elements.editProductNameInput.value = product.name;
-      elements.editProductQuantityInput.value = product.quantity;
-      elements.editProductPriceInput.value = product.price;
-      elements.editProductModal.classList.remove("hidden");
-    }
-    if (deleteBtn) {
-      const productId = deleteBtn.dataset.id;
-      const isProductInUse = rentals.some(
-        (rental) => rental.items && rental.items[productId]
-      );
-      if (isProductInUse) {
-        showModal(
-          `<p class="text-amber-400">Este produto não pode ser apagado pois está sendo usado em uma ou mais locações.</p>`
-        );
-        return;
+    let existingChat = null;
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      // Checa se participants batem EXATAMENTE (ordem não importa)
+      if (
+        data.participants &&
+        data.participants.sort().join() === participants.sort().join()
+      ) {
+        existingChat = { id: doc.id, ...data };
       }
-      showModal(`<p>Tem certeza que deseja apagar este produto?</p>`, () =>
-        db.deleteProduct(productId)
+    });
+
+    if (existingChat) {
+      console.log(
+        `🔄 Chat existente encontrado para produtoId ${produtoId}: ${existingChat.id}`
       );
-    }
-  });
-
-  elements.editProductForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const id = elements.editProductIdInput.value;
-    const updatedProduct = {
-      name: elements.editProductNameInput.value.trim(),
-      quantity: parseInt(elements.editProductQuantityInput.value),
-      price: parseFloat(elements.editProductPriceInput.value),
-    };
-    await db.updateProduct(id, updatedProduct);
-    elements.editProductModal.classList.add("hidden");
-  });
-  elements.cancelEditBtn.addEventListener("click", () =>
-    elements.editProductModal.classList.add("hidden")
-  );
-
-  elements.productSelectionContainer.addEventListener("click", (e) => {
-    const productCard = e.target.closest("[data-product-id]");
-    if (productCard) {
-      const productId = productCard.dataset.productId;
-      selectedProductsForRental[productId] = 1;
-      updateCreateRentalUI();
-    }
-  });
-
-  elements.selectedItemsContainer.addEventListener("input", (e) => {
-    if (e.target.classList.contains("quantity-input")) {
-      const productId = e.target.dataset.productId;
-      const quantity = parseInt(e.target.value);
-      if (!isNaN(quantity)) {
-        if (quantity > 0) {
-          selectedProductsForRental[productId] = quantity;
-        } else {
-          delete selectedProductsForRental[productId];
-        }
-        updateCreateRentalUI();
-      }
-    }
-  });
-
-  elements.selectedItemsContainer.addEventListener("click", (e) => {
-    const removeBtn = e.target.closest(".remove-item-btn");
-    if (removeBtn) {
-      const productId = removeBtn.closest(".selected-item-card").dataset
-        .productId;
-      delete selectedProductsForRental[productId];
-      updateCreateRentalUI();
-    }
-  });
-
-  elements.rentalDateInput.addEventListener("change", updateCreateRentalUI);
-  elements.returnDateInput.addEventListener("change", updateCreateRentalUI);
-  elements.rentalDiscountInput.addEventListener("input", () =>
-    updateRentalFormSummary(selectedProductsForRental)
-  );
-  elements.rentalMachineFeeInput.addEventListener("input", () =>
-    updateRentalFormSummary(selectedProductsForRental)
-  );
-
-  elements.rentalForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const rental = {
-      client: elements.clientNameInput.value.trim(),
-      address: elements.rentalAddressInput.value.trim(),
-      date: elements.rentalDateInput.value,
-      returnDate: elements.returnDateInput.value,
-      discount: parseFloat(elements.rentalDiscountInput.value) || 0,
-      machineFee: parseFloat(elements.rentalMachineFeeInput.value) || 0,
-      items: selectedProductsForRental,
-      paymentInfo: {
-        totalInstallments:
-          parseInt(elements.rentalInstallmentsInput.value) || 1,
-        paidInstallments: 0,
-      },
-    };
-
-    if (
-      !rental.client ||
-      !rental.date ||
-      !rental.returnDate ||
-      Object.keys(rental.items).length === 0
-    ) {
-      showModal(
-        `<p class="text-red-400">Preencha os campos obrigatórios e selecione itens.</p>`
-      );
-      return;
-    }
-
-    await db.addRental(rental);
-    showModal(`<p class="text-emerald-400">Locação salva!</p>`);
-    elements.rentalForm.reset();
-    selectedProductsForRental = {};
-    updateCreateRentalUI();
-  });
-
-  elements.editProductSelectionContainer.addEventListener("click", (e) => {
-    const productCard = e.target.closest("[data-product-id]");
-    if (productCard) {
-      const productId = productCard.dataset.productId;
-      selectedProductsForEdit[productId] = 1;
-      updateEditRentalUI();
-    }
-  });
-
-  elements.editSelectedItemsContainer.addEventListener("input", (e) => {
-    if (e.target.classList.contains("quantity-input")) {
-      const productId = e.target.dataset.productId;
-      const quantity = parseInt(e.target.value);
-      if (!isNaN(quantity)) {
-        if (quantity > 0) {
-          selectedProductsForEdit[productId] = quantity;
-        } else {
-          delete selectedProductsForEdit[productId];
-        }
-        updateEditRentalUI();
-      }
-    }
-  });
-
-  elements.editSelectedItemsContainer.addEventListener("click", (e) => {
-    const removeBtn = e.target.closest(".remove-item-btn");
-    if (removeBtn) {
-      const productId = removeBtn.closest(".selected-item-card").dataset
-        .productId;
-      delete selectedProductsForEdit[productId];
-      updateEditRentalUI();
-    }
-  });
-
-  elements.editRentalDateInput.addEventListener("change", updateEditRentalUI);
-  elements.editReturnDateInput.addEventListener("change", updateEditRentalUI);
-
-  elements.editRentalForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const rentalId = elements.editRentalIdInput.value;
-    const originalRental = rentals.find((r) => r.id === rentalId);
-
-    const updatedRental = {
-      client: elements.editClientNameInput.value.trim(),
-      address: elements.editRentalAddressInput.value.trim(),
-      date: elements.editRentalDateInput.value,
-      returnDate: elements.editReturnDateInput.value,
-      discount: parseFloat(elements.editRentalDiscountInput.value) || 0,
-      machineFee: parseFloat(elements.editRentalMachineFeeInput.value) || 0,
-      items: selectedProductsForEdit,
-      paymentInfo: {
-        totalInstallments:
-          parseInt(elements.editRentalInstallmentsInput.value) || 1,
-        paidInstallments: originalRental.paymentInfo.paidInstallments,
-      },
-    };
-
-    await db.updateRental(rentalId, updatedRental);
-    showModal(`<p class="text-emerald-400">Locação atualizada!</p>`);
-    elements.editRentalModal.classList.add("hidden");
-  });
-
-  elements.cancelEditRentalBtn.addEventListener("click", () => {
-    elements.editRentalModal.classList.add("hidden");
-  });
-
-  elements.rentalSearchInput.addEventListener("input", (e) =>
-    renderRentalHistory(e.target.value)
-  );
-
-  elements.rentalHistoryList.addEventListener("click", (e) => {
-    const target = e.target.closest("button");
-    if (!target) return;
-
-    const rentalId = target.dataset.id;
-    const rental = rentals.find((r) => r.id === rentalId);
-    if (!rental) return;
-
-    if (target.classList.contains("add-payment-btn")) {
-      elements.rentalIdForPaymentInput.value = rentalId;
-      elements.paymentModal.classList.remove("hidden");
-      elements.paymentAmountInput.focus();
-    }
-    if (target.classList.contains("delete-payment-btn")) {
-      const timestamp = parseInt(target.dataset.paymentTimestamp);
-      const paymentToDelete = rental.payments.find((p) => {
-        const pTimestamp =
-          p.date.seconds || Math.floor(p.date.getTime() / 1000);
-        return pTimestamp === timestamp;
+      return res.json({
+        chatId: existingChat.id,
+        message: "Chat existente retornado!",
       });
+    }
 
-      if (paymentToDelete) {
-        showModal(`<p>Tem certeza que deseja apagar este pagamento?</p>`, () =>
-          db.deletePayment(rentalId, paymentToDelete)
+    // Se não existe, cria um novo
+    const newChatRef = chatsRef.doc();
+    const newChatData = {
+      participants,
+      produtoId,
+      produtoNome: produtoNome || "Produto sem nome",
+      usuariosInfo: usuariosInfo || {},
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      lastMessage: "",
+      lastMessageTimestamp: admin.firestore.FieldValue.serverTimestamp(),
+    };
+    await newChatRef.set(newChatData);
+
+    console.log(
+      `🆕 Novo chat criado para produtoId ${produtoId}: ${newChatRef.id}`
+    );
+    return res.json({ chatId: newChatRef.id, message: "Novo chat criado!" });
+  } catch (err) {
+    console.error("❌ Erro ao criar/checagem de chat:", err);
+    return res.status(500).json({ error: "Erro interno ao processar chat!" });
+  }
+});
+
+const server = app.listen(8080, () =>
+  console.log("🟢 Servidor rodando na porta 8080")
+);
+
+const wss = new WebSocket.Server({ server });
+
+function sendJson(ws, data) {
+  try {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(data));
+    }
+  } catch (err) {
+    console.error("❌ Erro ao enviar JSON via WebSocket:", err);
+  }
+}
+
+wss.on("connection", (ws, req) => {
+  const urlParams = new URLSearchParams(
+    req.url.substring(req.url.indexOf("?"))
+  );
+  const chatId = urlParams.get("chatId");
+  const userUid = urlParams.get("userUid");
+
+  if (!chatId || !userUid) {
+    console.log("⛔ Conexão WebSocket rejeitada: Faltam chatId ou userUid.");
+    return ws.close();
+  }
+
+  ws.chatId = chatId;
+  ws.userUid = userUid;
+  console.log(`🔗 Cliente ${userUid} conectado ao chat ${chatId}`);
+
+  // PATCH: Sempre sinc usuariosInfo ao conectar:
+  (async () => {
+    try {
+      const chatRef = db.collection("chats").doc(chatId);
+      const chatSnap = await chatRef.get();
+      if (!chatSnap.exists) return;
+
+      const chatData = chatSnap.data();
+      const participantes = chatData.participants || [];
+      let usuariosInfoAtualizado = { ...chatData.usuariosInfo } || {};
+      for (const uid of participantes) {
+        try {
+          const userSnap = await db.collection("usuarios").doc(uid).get();
+          if (userSnap.exists) {
+            const d = userSnap.data();
+            usuariosInfoAtualizado[uid] = {
+              nome: d.nome || "Usuário",
+              foto: d.foto || "",
+            };
+          }
+        } catch (e) {
+          if (!usuariosInfoAtualizado[uid]) {
+            usuariosInfoAtualizado[uid] = { nome: "Usuário", foto: "" };
+          }
+        }
+      }
+      if (
+        JSON.stringify(chatData.usuariosInfo) !==
+        JSON.stringify(usuariosInfoAtualizado)
+      ) {
+        await chatRef.set(
+          { usuariosInfo: usuariosInfoAtualizado },
+          { merge: true }
+        );
+        console.log(
+          "🟢 usuariosInfo do chat sincronizado ao conectar:",
+          chatId,
+          usuariosInfoAtualizado
         );
       }
+    } catch (err) {
+      console.error("❌ Erro ao atualizar usuariosInfo no onConnection:", err);
     }
-    if (target.classList.contains("receipt-btn")) {
-      generateReceipt(rental, products);
+  })();
+
+  // Salva status online no Firestore (presencas/{userUid})
+  db.collection("presencas")
+    .doc(userUid)
+    .set(
+      {
+        online: true,
+        ultimoAcesso: admin.firestore.FieldValue.serverTimestamp(),
+        chatIdAtual: chatId,
+      },
+      { merge: true }
+    )
+    .then(() =>
+      console.log(
+        `🟢 [PRESENÇA] Usuário ${userUid} marcado como ONLINE no Firestore`
+      )
+    )
+    .catch((err) =>
+      console.error(
+        `❌ [PRESENÇA] Falha ao marcar ${userUid} como online:`,
+        err
+      )
+    );
+
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN && client.chatId === chatId) {
+      sendJson(client, { type: "user_online", userUid });
     }
-    if (target.classList.contains("delete-rental-btn")) {
-      showModal(
-        `<p>Apagar locação de <strong>${rental.client}</strong>?</p>`,
-        () => db.deleteRental(rentalId)
+  });
+
+  db.collection("chats")
+    .doc(chatId)
+    .collection("messages")
+    .orderBy("timestamp", "asc")
+    .get()
+    .then((snapshot) => {
+      const messages = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      console.log(
+        `📩 Enviando ${messages.length} mensagens de histórico para ${userUid} no chat ${chatId}`
       );
+      sendJson(ws, { type: "history", messages });
+    })
+    .catch((err) => console.error("❌ Erro ao buscar histórico:", err));
+
+  ws.on("message", async (raw) => {
+    let msg;
+    try {
+      msg = JSON.parse(raw);
+    } catch {
+      console.log("⚠️ Mensagem malformada recebida e ignorada:", raw);
+      return;
     }
-    if (target.classList.contains("edit-rental-btn")) {
-      currentEditRentalId = rental.id;
-      selectedProductsForEdit = { ...rental.items };
-      elements.editRentalIdInput.value = rental.id;
-      elements.editClientNameInput.value = rental.client;
-      elements.editRentalAddressInput.value = rental.address || "";
-      elements.editRentalDateInput.value = rental.date;
-      elements.editReturnDateInput.value = rental.returnDate;
-      elements.editRentalDiscountInput.value = rental.discount || 0;
-      elements.editRentalMachineFeeInput.value = rental.machineFee || 0;
-      elements.editRentalInstallmentsInput.value =
-        rental.paymentInfo.totalInstallments || 1;
-      updateEditRentalUI();
-      elements.editRentalModal.classList.remove("hidden");
-    }
-    if (target.classList.contains("installment-circle-btn")) {
-      const installmentIndex = parseInt(target.dataset.installmentIndex);
-      let { paidInstallments } = rental.paymentInfo;
-      if (installmentIndex === paidInstallments + 1) {
-        paidInstallments++;
-      } else if (installmentIndex === paidInstallments) {
-        paidInstallments--;
+
+    // LOGA TUDO QUE CHEGA DO CLIENTE
+    console.log("🗳️ Payload recebido:", JSON.stringify(msg, null, 2));
+
+    // --- NOVO: handler para fechamento de chat! ---
+    if (msg.type === "close_chat") {
+      console.log("⛔️ Evento 'close_chat' recebido!");
+      try {
+        const chatRef = db.collection("chats").doc(ws.chatId);
+
+        // Apaga todas as mensagens do chat
+        const msgsSnap = await chatRef.collection("messages").get();
+        const batch = db.batch();
+        msgsSnap.forEach((doc) => batch.delete(doc.ref));
+        await batch.commit();
+
+        // Apaga o documento do chat
+        await chatRef.delete();
+
+        // Notifica todos os clientes conectados no chat
+        wss.clients.forEach((client) => {
+          if (
+            client.readyState === WebSocket.OPEN &&
+            client.chatId === ws.chatId
+          ) {
+            sendJson(client, {
+              type: "chat_closed",
+              closedBy: ws.userUid,
+              closedByName: msg.fromName || "Alguém",
+            });
+          }
+        });
+        console.log("✅ Chat removido e broadcast enviado!");
+      } catch (err) {
+        console.error("❌ Erro ao encerrar chat:", err);
+        sendJson(ws, { type: "error", error: "Falha ao encerrar chat!" });
       }
-      db.updateRentalPayment(rentalId, paidInstallments);
+      return; // NÃO continue processando como mensagem normal!
     }
-  });
 
-  elements.paymentForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const rentalId = elements.rentalIdForPaymentInput.value;
-    const amount = elements.paymentAmountInput.value;
-    if (rentalId && amount > 0) {
-      await db.addPayment(rentalId, amount);
-      elements.paymentModal.classList.add("hidden");
-      elements.paymentForm.reset();
+    if (msg.type !== "message") {
+      console.log(
+        `ℹ️ Evento '${msg.type}' recebido de ${ws.userUid} em ${ws.chatId}`
+      );
+      return;
     }
-  });
 
-  elements.cancelPaymentBtn.addEventListener("click", () => {
-    elements.paymentModal.classList.add("hidden");
-    elements.paymentForm.reset();
-  });
+    const { from, fromName, text, timestamp, replyTo, produtoId, produtoNome } =
+      msg;
+    const fromPhotoURL = msg.fromPhotoURL || "";
 
-  elements.showHelpBtn.addEventListener("click", () =>
-    elements.helpModal.classList.remove("hidden")
-  );
-  elements.closeHelpBtn.addEventListener("click", () =>
-    elements.helpModal.classList.add("hidden")
-  );
+    // LOGA OS DADOS BÁSICOS DO ENVIO
+    console.log(
+      `🧾 Dados mensagem recebida > from: ${from} | nome: ${fromName} | foto: ${fromPhotoURL}`
+    );
 
-  elements.toggleEditProductSelectionBtn.addEventListener("click", () => {
-    elements.editProductSelectionWrapper.classList.toggle("hidden");
-    elements.toggleEditProductIcon.classList.toggle("rotate-180");
-  });
+    if (!from || !text || !text.trim()) {
+      console.log("❗ Mensagem inválida recebida! Enviando erro para cliente.");
+      return sendJson(ws, { type: "error", error: "Mensagem inválida" });
+    }
 
-  document.querySelectorAll(".calendar-trigger").forEach((trigger) => {
-    trigger.addEventListener("click", () => {
-      const dateInput = trigger
-        .closest(".input-wrapper")
-        .querySelector('input[type="date"]');
-      if (dateInput?.showPicker) {
+    try {
+      const chatRef = db.collection("chats").doc(ws.chatId);
+      const chatSnap = await chatRef.get();
+      let chatData = chatSnap.exists ? chatSnap.data() : {};
+      let participantes = chatData.participants || [from];
+      if (!participantes.includes(from)) participantes.push(from);
+
+      // Descobre o outro participante
+      let otherUid = participantes.find((uid) => uid !== from) || null;
+
+      // Atualiza e LOGA info dos participantes
+      let usuariosInfoAtualizado = Object.assign(
+        {},
+        chatData.usuariosInfo || {}
+      );
+      // Atualiza o remetente (quem está enviando)
+      usuariosInfoAtualizado[from] = {
+        nome: fromName || "Anônimo",
+        foto: fromPhotoURL,
+      };
+
+      console.log(
+        `🟦 [USUARIO] PARTICIPANTE FROM > uid: ${from} | nome: ${fromName} | foto: ${fromPhotoURL}`
+      );
+
+      // Atualiza/recupera info do outro
+      if (
+        otherUid &&
+        (!usuariosInfoAtualizado[otherUid] ||
+          !usuariosInfoAtualizado[otherUid].nome)
+      ) {
         try {
-          dateInput.showPicker();
-        } catch (error) {
-          console.warn("showPicker() não é suportado neste navegador.", error);
+          const userSnap = await db.collection("usuarios").doc(otherUid).get();
+          if (userSnap.exists) {
+            const info = userSnap.data();
+            usuariosInfoAtualizado[otherUid] = {
+              nome: info.nome || "Usuário",
+              foto: info.foto || "",
+            };
+            console.log(
+              `🟩 [USUARIO] PARTICIPANTE OUTRO > uid: ${otherUid} | nome: ${
+                info.nome || "Usuário"
+              } | foto: ${info.foto || ""}`
+            );
+          } else {
+            usuariosInfoAtualizado[otherUid] = {
+              nome: "Usuário",
+              foto: "",
+            };
+            console.log(
+              `🟧 [USUARIO] PARTICIPANTE OUTRO NÃO ENCONTRADO > uid: ${otherUid}`
+            );
+          }
+        } catch (err) {
+          usuariosInfoAtualizado[otherUid] = {
+            nome: "Usuário",
+            foto: "",
+          };
+          console.error(
+            `❌ [USUARIO] Erro ao buscar dados do participante ${otherUid}:`,
+            err
+          );
         }
+      }
+
+      let payload = {
+        lastMessage: text,
+        lastMessageTimestamp:
+          timestamp || admin.firestore.FieldValue.serverTimestamp(),
+        usuariosInfo: usuariosInfoAtualizado,
+      };
+
+      if (produtoId) {
+        console.log(`📝 Recebido produtoId do front: "${produtoId}"`);
+        payload.produtoId = produtoId;
+      }
+      if (produtoNome) {
+        console.log(`📝 Recebido produtoNome do front: "${produtoNome}"`);
+        payload.produtoNome = produtoNome;
+      }
+
+      await chatRef.set(payload, { merge: true });
+      console.log(
+        `✔️ Chat ${ws.chatId} atualizado com nova mensagem, usuariosInfo completo e possíveis campos de produto`
+      );
+
+      console.log(
+        "📦 usuariosInfo gravado:",
+        JSON.stringify(payload.usuariosInfo, null, 2)
+      );
+
+      const msgObj = {
+        from,
+        fromName,
+        fromPhotoURL,
+        text,
+        timestamp,
+        replyTo: replyTo || null,
+      };
+      const messageDoc = await chatRef.collection("messages").add(msgObj);
+      const messageWithId = {
+        type: "message",
+        id: messageDoc.id,
+        ...msgObj,
+        fromName: usuariosInfoAtualizado[from]?.nome || "Usuário",
+        fromPhotoURL: usuariosInfoAtualizado[from]?.foto || "",
+      };
+
+      console.log(
+        `💬 Mensagem adicionada à subcoleção [${messageDoc.id}]:`,
+        msgObj
+      );
+
+      wss.clients.forEach((client) => {
+        if (
+          client.readyState === WebSocket.OPEN &&
+          client.chatId === ws.chatId
+        ) {
+          sendJson(client, messageWithId);
+        }
+      });
+      console.log(
+        "🔊 Mensagem broadcast para todos clientes conectados neste chat."
+      );
+    } catch (err) {
+      console.error("❌ Erro ao processar mensagem:", err);
+      sendJson(ws, { type: "error", error: "Erro interno ao enviar mensagem" });
+    }
+  });
+
+  ws.on("close", () => {
+    console.log(`🔌 Cliente ${userUid} desconectado do chat ${chatId}`);
+
+    db.collection("presencas")
+      .doc(userUid)
+      .set(
+        {
+          online: false,
+          ultimoAcesso: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      )
+      .then(() =>
+        console.log(
+          `⚫ [PRESENÇA] Usuário ${userUid} marcado como OFFLINE no Firestore`
+        )
+      )
+      .catch((err) =>
+        console.error(
+          `❌ [PRESENÇA] Falha ao marcar ${userUid} como offline:`,
+          err
+        )
+      );
+
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN && client.chatId === chatId) {
+        sendJson(client, { type: "user_offline", userUid });
       }
     });
   });
 
-  // Backup Listeners
-  elements.exportBackupBtn.addEventListener("click", () => {
-    const dataToExport = {
-      products: products,
-      rentals: rentals,
-    };
-    const dataStr = JSON.stringify(dataToExport, null, 2);
-    const dataBlob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(dataBlob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `backup-locacoes-${
-      new Date().toISOString().split("T")[0]
-    }.json`;
-    anchor.click();
-    URL.revokeObjectURL(url);
-    showModal(`<p class="text-emerald-400">Backup exportado com sucesso!</p>`);
-  });
-
-  elements.importBackupBtn.addEventListener("click", () =>
-    elements.backupFileInput.click()
+  ws.on("error", (error) =>
+    console.error(`❌ Erro no WebSocket [${chatId}]:`, error)
   );
+});
 
-  elements.backupFileInput.addEventListener("change", (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const importedData = JSON.parse(e.target.result);
-        if (importedData.products && importedData.rentals) {
-          showModal(
-            `<p class="text-amber-400">Atenção: Isso adicionará os dados do arquivo ao sistema. Dados existentes não serão apagados. Deseja continuar?</p>`,
-            async () => {
-              elements.loadingOverlay.classList.remove("hidden");
-              for (const product of importedData.products) {
-                const { id, ...productData } = product;
-                await db.addProduct(productData);
-              }
-              for (const rental of importedData.rentals) {
-                const { id, ...rentalData } = rental;
-                await db.addRental(rentalData);
-              }
-              elements.loadingOverlay.classList.add("hidden");
-              showModal(
-                `<p class="text-emerald-400">Dados importados com sucesso!</p>`
-              );
-            }
-          );
-        } else {
-          showModal(`<p class="text-red-400">Arquivo de backup inválido.</p>`);
-        }
-      } catch (error) {
-        showModal(
-          `<p class="text-red-400">Erro ao ler o arquivo de backup.</p>`
-        );
-        console.error(error);
-      }
-    };
-    reader.readAsText(file);
-    event.target.value = "";
+// Ping-pong para manter a conexão viva
+setInterval(() => {
+  wss.clients.forEach((ws) => {
+    if (ws.isAlive === false) {
+      console.log("⏰ WebSocket morto, desconectando...");
+      return ws.terminate();
+    }
+    ws.isAlive = false;
+    ws.ping();
   });
-};
+}, 30000);
 
-init();
+wss.on("connection", (ws) => {
+  ws.isAlive = true;
+  ws.on("pong", () => {
+    ws.isAlive = true;
+  });
+});

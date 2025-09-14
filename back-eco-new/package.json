@@ -1,0 +1,32 @@
+{
+  "name": "eco-busque-backend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.48.1",
+    "axios": "^1.10.0",
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.7",
+    "eco-busque-backend": "file:",
+    "express": "^4.21.2",
+    "firebase-admin": "^13.4.0",
+    "mercadopago": "^2.8.0",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.10.0",
+    "nodemon": "^3.1.10",
+    "pg": "^8.12.0",
+    "socket.io": "^4.8.1",
+    "uuid": "^11.0.5",
+    "ws": "^8.18.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

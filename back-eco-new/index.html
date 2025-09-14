@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Página de Testes - AlugaAi Backend</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: sans-serif; }
+        .loading { 
+            opacity: 0.6; 
+            pointer-events: none; 
+        }
+        .success { 
+            border-color: #10b981; 
+            background-color: #ecfdf5; 
+        }
+        .error { 
+            border-color: #ef4444; 
+            background-color: #fef2f2; 
+        }
+        .log-container {
+            background: #1f2937;
+            color: #f3f4f6;
+            font-family: 'Courier New', monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md space-y-8">
+        <h1 class="text-3xl font-bold text-center text-gray-800">🧪 Página de Teste da API AlugaAi</h1>
+
+        <!-- Status do Backend -->
+        <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+            <h2 class="text-lg font-semibold text-blue-700 mb-2">Status do Backend</h2>
+            <button id="check-backend" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+                Verificar Backend
+            </button>
+            <div id="backend-status" class="mt-2 text-sm"></div>
+        </div>
+
+        <!-- Teste Minimalista -->
+        <div class="border border-gray-200 p-6 rounded-lg">
+            <h2 class="text-xl font-semibold text-blue-600">🎯 1. Teste Minimalista (GET)</h2>
+            <p class="text-gray-600 mt-2 mb-4">
+                Testa a rota <code class="bg-gray-100 px-1 rounded">/teste-pagamento-minimo</code>. 
+                Usa dados 100% fixos no backend com credenciais de teste do MercadoPago.
+            </p>
+            <a href="http://localhost:8080/teste-pagamento-minimo" 
+               target="_blank" 
+               class="w-full inline-block text-center bg-blue-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-600 transition duration-300">
+                🚀 Iniciar Teste Minimalista
+            </a>
+        </div>
+
+        <!-- Teste Simulado Completo -->
+        <div class="border-2 border-green-500 p-6 rounded-lg">
+            <h2 class="text-xl font-semibold text-green-600">🔥 2. Teste Simulado do Fluxo Completo (POST)</h2>
+            <p class="text-gray-600 mt-2 mb-4">
+                Simula exatamente o fluxo do <code class="bg-gray-100 px-1 rounded">pagamento.html</code> 
+                com validações, logs detalhados e tratamento de erros melhorado.
+            </p>
+            
+            <!-- Configurações de Teste -->
+            <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-4">
+                <h3 class="font-semibold text-yellow-800 mb-2">⚙️ Configurações de Teste</h3>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <label class="block text-gray-700 font-medium">Lugar ID:</label>
+                        <input id="lugarId" type="text" value="KRtKI03159wtNcOVdq3g" 
+                               class="w-full px-3 py-1 border rounded text-xs font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium">Usuário UID:</label>
+                        <input id="usuarioUid" type="text" value="dK6dBIi1QIRmaulHpOOESTzfPJJ2" 
+                               class="w-full px-3 py-1 border rounded text-xs font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium">Check-in:</label>
+                        <input id="checkin" type="datetime-local" value="2025-10-20T14:00" 
+                               class="w-full px-3 py-1 border rounded text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium">Check-out:</label>
+                        <input id="checkout" type="datetime-local" value="2025-10-22T11:00" 
+                               class="w-full px-3 py-1 border rounded text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium">Nome:</label>
+                        <input id="nome" type="text" value="Hospede Teste Simulado" 
+                               class="w-full px-3 py-1 border rounded text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium">Email (MercadoPago Test):</label>
+                        <input id="email" type="email" value="test_user_2678129888@testuser.com" 
+                               class="w-full px-3 py-1 border rounded text-xs font-mono">
+                        <small class="text-yellow-600">⚠️ Email de teste oficial do MP</small>
+                    </div>
+                </div>
+            </div>
+
+            <button id="test-post-btn" 
+                    class="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition duration-300 mb-4">
+                🎮 Iniciar Simulação Completa
+            </button>
+            
+            <!-- Log Container -->
+            <div id="log-container" class="log-container p-4 rounded-lg hidden">
+                <h4 class="text-green-400 font-semibold mb-2">📋 Logs da Execução:</h4>
+                <div id="logs" class="text-xs leading-relaxed"></div>
+            </div>
+        </div>
+
+        <!-- Área de Debug -->
+        <div class="bg-gray-50 border border-gray-200 p-6 rounded-lg">
+            <h2 class="text-xl font-semibold text-gray-700">🐛 Debug & Informações</h2>
+            <div id="debug-info" class="mt-4 space-y-2 text-sm text-gray-600">
+                <p><strong>Backend URL:</strong> <span class="font-mono">http://localhost:8080</span></p>
+                <p><strong>Ambiente:</strong> <span class="font-mono">Desenvolvimento</span></p>
+                <p><strong>Timestamp:</strong> <span class="font-mono" id="timestamp"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração base
+        const BACKEND_URL = 'http://localhost:8080';
+        
+        // Elementos DOM
+        const elements = {
+            checkBackend: document.getElementById('check-backend'),
+            backendStatus: document.getElementById('backend-status'),
+            testPostBtn: document.getElementById('test-post-btn'),
+            logContainer: document.getElementById('log-container'),
+            logs: document.getElementById('logs'),
+            timestamp: document.getElementById('timestamp'),
+            // Inputs de configuração
+            lugarId: document.getElementById('lugarId'),
+            usuarioUid: document.getElementById('usuarioUid'),
+            checkin: document.getElementById('checkin'),
+            checkout: document.getElementById('checkout'),
+            nome: document.getElementById('nome'),
+            email: document.getElementById('email')
+        };
+
+        // Funções utilitárias
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('pt-BR');
+            const colors = {
+                info: 'text-blue-300',
+                success: 'text-green-300',
+                error: 'text-red-300',
+                warning: 'text-yellow-300'
+            };
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = `${colors[type]} mb-1`;
+            logEntry.innerHTML = `<span class="text-gray-400">[${timestamp}]</span> ${message}`;
+            
+            elements.logs.appendChild(logEntry);
+            elements.logContainer.scrollTop = elements.logContainer.scrollHeight;
+            
+            // Sempre mostrar o container quando há logs
+            elements.logContainer.classList.remove('hidden');
+            
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function clearLogs() {
+            elements.logs.innerHTML = '';
+            elements.logContainer.classList.add('hidden');
+        }
+
+        function updateTimestamp() {
+            elements.timestamp.textContent = new Date().toLocaleString('pt-BR');
+        }
+
+        function validateInputs() {
+            const required = ['lugarId', 'usuarioUid', 'nome', 'email'];
+            const errors = [];
+            
+            required.forEach(field => {
+                if (!elements[field].value.trim()) {
+                    errors.push(`${field} é obrigatório`);
+                }
+            });
+            
+            // Validar email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(elements.email.value)) {
+                errors.push('Email inválido');
+            }
+            
+            // Validar datas
+            const checkinDate = new Date(elements.checkin.value);
+            const checkoutDate = new Date(elements.checkout.value);
+            
+            if (checkinDate >= checkoutDate) {
+                errors.push('Data de check-out deve ser posterior ao check-in');
+            }
+            
+            return errors;
+        }
+
+        // Event Listeners
+        elements.checkBackend.addEventListener('click', async () => {
+            addLog('🔍 Verificando status do backend...', 'info');
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/teste-servidor`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    elements.backendStatus.innerHTML = `
+                        <span class="text-green-600 font-semibold">✅ Backend Online</span>
+                        <p class="text-xs text-gray-600 mt-1">${data.message}</p>
+                    `;
+                    addLog('✅ Backend respondeu corretamente!', 'success');
+                } else {
+                    throw new Error(`Status: ${response.status}`);
+                }
+                
+            } catch (error) {
+                elements.backendStatus.innerHTML = `
+                    <span class="text-red-600 font-semibold">❌ Backend Offline</span>
+                    <p class="text-xs text-gray-600 mt-1">Erro: ${error.message}</p>
+                `;
+                addLog(`❌ Erro ao conectar: ${error.message}`, 'error');
+            }
+        });
+
+        elements.testPostBtn.addEventListener('click', async () => {
+            clearLogs();
+            addLog('🚀 Iniciando simulação do fluxo completo...', 'info');
+            
+            // Validar inputs
+            const validationErrors = validateInputs();
+            if (validationErrors.length > 0) {
+                addLog('❌ Erros de validação encontrados:', 'error');
+                validationErrors.forEach(error => addLog(`  • ${error}`, 'error'));
+                return;
+            }
+            
+            // Preparar dados da reserva
+            const dadosReserva = {
+                lugarId: elements.lugarId.value.trim(),
+                checkin: new Date(elements.checkin.value).toISOString(),
+                checkout: new Date(elements.checkout.value).toISOString(),
+                usuarioUid: elements.usuarioUid.value.trim(),
+                nome: elements.nome.value.trim(),
+                email: elements.email.value.trim()
+            };
+            
+            addLog('📦 Dados preparados para envio:', 'info');
+            addLog(JSON.stringify(dadosReserva, null, 2), 'info');
+            
+            // Desabilitar botão durante execução
+            elements.testPostBtn.disabled = true;
+            elements.testPostBtn.classList.add('loading');
+            elements.testPostBtn.textContent = '⏳ Gerando pagamento...';
+            
+            try {
+                addLog('📡 Enviando requisição para /criar-pagamento...', 'info');
+                
+                const response = await fetch(`${BACKEND_URL}/criar-pagamento`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify(dadosReserva),
+                });
+                
+                addLog(`📋 Status da resposta: ${response.status} ${response.statusText}`, 
+                       response.ok ? 'success' : 'warning');
+                
+                const responseData = await response.json();
+                addLog('📥 Resposta do servidor:', 'info');
+                addLog(JSON.stringify(responseData, null, 2), 'info');
+                
+                if (!response.ok) {
+                    throw new Error(responseData.error || `Erro HTTP ${response.status}`);
+                }
+                
+                if (responseData.init_point) {
+                    addLog('✅ init_point recebido com sucesso!', 'success');
+                    addLog(`🔗 Redirecionando para: ${responseData.init_point}`, 'success');
+                    
+                    // Pequeno delay para o usuário ver os logs
+                    setTimeout(() => {
+                        window.location.href = responseData.init_point;
+                    }, 2000);
+                    
+                } else {
+                    throw new Error('init_point não encontrado na resposta do servidor');
+                }
+                
+            } catch (error) {
+                addLog(`❌ Erro durante a execução: ${error.message}`, 'error');
+                
+                // Log adicional para erros de rede
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    addLog('🌐 Possível problema de CORS ou backend offline', 'warning');
+                    addLog('💡 Verifique se o backend está rodando em http://localhost:8080', 'warning');
+                }
+                
+            } finally {
+                // Reabilitar botão
+                elements.testPostBtn.disabled = false;
+                elements.testPostBtn.classList.remove('loading');
+                elements.testPostBtn.textContent = '🎮 Iniciar Simulação Completa';
+            }
+        });
+
+        // Inicialização
+        updateTimestamp();
+        setInterval(updateTimestamp, 1000);
+        
+        // Auto-check do backend ao carregar a página
+        setTimeout(() => {
+            elements.checkBackend.click();
+        }, 1000);
+        
+        addLog('🎯 Página de testes carregada e pronta!', 'success');
+    </script>
+</body>
+</html>

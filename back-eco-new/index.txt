@@ -1,0 +1,1010 @@
+document.addEventListener("DOMContentLoaded", async () => {
+  const comercioList = document.getElementById("comercio-list");
+  const searchInput = document.getElementById("searchInput");
+  const categoriaTextoEl = document.getElementById("categoriaSelecionadaTexto");
+  const loading = document.getElementById("loading");
+  const comercioSection = document.getElementById("comercio-list");
+  let ultimaBusca = "";
+
+  window.allComercios = [];
+
+const CACHE_KEY = "comerciosCache";
+  const ONE_DAY_MS = 2 * 24 * 60 * 60 * 1000; // 48 horas em ms
+  //const ONE_DAY_MS = 24 * 60 * 60 * 1000; // 24 horas em ms
+  const CACHE_TTL = ONE_DAY_MS; // Tempo de vida do cache (1 dia)
+
+  async function carregarComercios(categoria = "todos") {
+    try {
+      if (loading) loading.style.display = "flex";
+
+      // Tentar ler do cache
+      const cacheRaw = localStorage.getItem(CACHE_KEY);
+      let usarCache = false;
+      if (cacheRaw) {
+        const cache = JSON.parse(cacheRaw);
+        const agora = Date.now();
+        if (
+          agora - cache.timestamp < CACHE_TTL &&
+          categoria === cache.categoria &&
+          Array.isArray(cache.data) &&
+          cache.data.length > 0
+        ) {
+          window.allComercios = cache.data;
+          renderComercios(cache.data);
+          usarCache = true;
+        }
+      }
+
+      if (!usarCache) {
+        let url = `${window.ENV.API_URL}/comercios`;
+        if (categoria !== "todos") {
+          url += `?categoria=${encodeURIComponent(categoria)}`;
+        }
+
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Falha na requisição");
+
+        const comercios = await response.json();
+
+        if (Array.isArray(comercios) && comercios.length > 0) {
+          // Salva cache e atualiza window.allComercios
+          localStorage.setItem(
+            CACHE_KEY,
+            JSON.stringify({
+              timestamp: Date.now(),
+              categoria,
+              data: comercios,
+            })
+          );
+
+          window.allComercios = comercios;
+          renderComercios(comercios);
+        } else {
+          throw new Error("Nenhum comércio encontrado para esta categoria");
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao carregar comércios:", error);
+      comercioList.innerHTML = `
+        <div class="erro-animado">
+          <div class="icone-alerta">⚠️</div>
+          <p>Não foi possível carregar os comércios 😢</p>
+          <small>Estamos em manutenção 🛠️ A página será recarregada em instantes...</small>
+        </div>
+      `;
+      window.allComercios = [];
+
+      // Recarrega automaticamente após 5 segundos
+      setTimeout(() => {
+        location.reload();
+      }, 5000);
+    } finally {
+      if (loading) loading.style.display = "none";
+    }
+  }
+
+  function renderComercios(comercios) {
+    if (!comercioList) return;
+
+    // Seleciona um comércio aleatório para ser a recomendação do dia
+    const recomendacaoDiaIndex = Math.floor(Math.random() * comercios.length);
+    const recomendacaoDia = comercios[recomendacaoDiaIndex];
+
+    // Cria um elemento para a recomendação do dia
+    const recomendacaoEl = document.createElement("div");
+    recomendacaoEl.classList.add("recomendacao-dia");
+    recomendacaoEl.innerHTML = `
+   <div class="comercio-card">
+     <div class="comercio-card-content">
+       <h3>⭐ Recomendação do Dia: ${recomendacaoDia.nome}</h3>
+       <div class="comercio-imagem">
+         <img src="${
+           recomendacaoDia.imagem_capa || "/default-image.jpg"
+         }" alt="Imagem de ${recomendacaoDia.nome}" />
+       </div>
+       <p><strong>Categoria:</strong> ${recomendacaoDia.categoria}</p>
+       <p><strong>Endereço:</strong> ${recomendacaoDia.endereco}</p>
+       <button onclick="compartilharComercio(${
+         recomendacaoDia.id
+       })" class="btn-compartilhar">
+        compartilhar
+       </button>
+     </div>
+   </div>
+ `;
+
+    comercioList.innerHTML = "";
+
+    if (comercios.length === 0) {
+      comercioList.innerHTML = `
+        <div class="no-results">
+          <div class="icon">⚠️</div>
+          <p>Nenhum comércio encontrado.</p>
+        </div>
+      `;
+      return;
+    }
+
+    comercios.forEach((comercio, index) => {
+      const comercioItem = document.createElement("div");
+      comercioItem.classList.add("comercio-card");
+
+      let imagens = [];
+      if (comercio.imagem_capa) imagens.push(comercio.imagem_capa);
+      if (comercio.imagem_capa_2) imagens.push(comercio.imagem_capa_2);
+      if (comercio.imagem_capa_3) imagens.push(comercio.imagem_capa_3);
+
+      let imagensHtml = imagens
+        .map(
+          (img, i) => `
+            <img src="${img}" class="comercio-imagem ${
+            i === 0 ? "active" : ""
+          }" data-index="${i}" />
+          `
+        )
+        .join("");
+
+      let controlsHtml =
+        imagens.length > 1
+          ? `
+              <button class="prev">&#10094;</button>
+              <button class="next">&#10095;</button>
+            `
+          : "";
+
+     let socialLinksHtml = `
+  <div class="comercio-links">
+
+    ${
+      comercio.link_instagram
+        ? `<a href="${comercio.link_instagram}" target="_blank"
+              class="btn-social"
+              onclick="registrarClique('${comercio.id}', 'instagram', '${comercio.nome}')">Instagram</a>`
+        : comercio.link_facebook
+        ? `<a href="${comercio.link_facebook}" target="_blank"
+              class="btn-social"
+              onclick="registrarClique('${comercio.id}', 'facebook', '${comercio.nome}')">Facebook</a>`
+        : `<a href="#" class="btn-social disabled">Instagram</a>`
+    }
+
+    ${
+      comercio.link_cardapio
+        ? `<a href="${comercio.link_cardapio}" target="_blank"
+              class="btn-social"
+              onclick="registrarClique('${comercio.id}', 'cardapio', '${comercio.nome}')">Cardápio</a>`
+        : comercio.link_site_pessoal
+        ? `<a href="${comercio.link_site_pessoal}" target="_blank"
+              class="btn-social"
+              onclick="registrarClique('${comercio.id}', 'site', '${comercio.nome}')">${
+                comercio.categoria === "mercados" ? "Promoções" : "Site"
+              }</a>`
+        : `<a href="#" class="btn-social disabled">Cardápio</a>`
+    }
+
+    <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      comercio.endereco
+    )}"
+      target="_blank"
+      class="btn-social ${comercio.endereco ? "" : "disabled"}"
+      onclick="registrarClique('${comercio.id}', 'maps', '${comercio.nome}')">Maps</a>
+
+    <a href="#"
+      class="btn-social ${comercio.telefone ? "" : "disabled"}"
+      onclick="abrirWhatsapp('${comercio.telefone}', '${comercio.id}', '${comercio.nome}'); return false;">
+      WhatsApp
+    </a>
+
+  </div>
+`;
+
+      comercioItem.innerHTML = `
+        <div class="comercio-card-content">
+          <h3>${comercio.nome}</h3>
+          <div class="carrossel" id="carrossel-${index}">
+            ${imagensHtml}
+            ${controlsHtml}
+          </div>
+          <div id="detalhes-${
+            comercio.id
+          }" class="detalhes" style="display:none">
+            </p>
+            <p><strong>🌎 Categoria:</strong> ${comercio.categoria}
+            </p>
+            <p><strong>🏬 Endereço:</strong> ${comercio.endereco}
+            </p>
+<p>
+  <strong>⏰ Horário (pode variar em feriados):</strong>
+  <span id="horario-texto-${comercio.id}">
+    ${
+      comercio.horario_funcionamento
+        ? comercio.horario_funcionamento.length > 40
+          ? comercio.horario_funcionamento.slice(0, 40) + "..."
+          : comercio.horario_funcionamento
+        : "O horário não foi fornecido pelo proprietério"
+    }
+  </span>
+  ${
+    comercio.horario_funcionamento && comercio.horario_funcionamento.length > 40
+      ? `<button onclick="alternarHorario(${comercio.id})" id="btn-horario-${comercio.id}" class="btn-ver-mais">Ver mais</button>`
+      : ""
+  }
+</p>
+
+
+            <p><strong>☎️ Contato:</strong> ${
+              comercio.telefone ||
+              "O contato não foi fornecido pelo proprietério"
+            }</p>
+            ${(() => {
+              const categoriasComida = [
+                "pizzaria",
+                "lanchonete",
+                "restaurante",
+                "restaurante vegetariano",
+                "sorveteria",
+                "açaiteria",
+                "hamburgueria",
+                "bar",
+                "cafeteria",
+                "cafeteria vegana",
+                "mercado",
+              ];
+              const isComida = categoriasComida.includes(
+                comercio.categoria.toLowerCase()
+              );
+              if (!isComida) return "";
+
+              return `
+                <div class="formas-pagamento-container" data-id="${
+                  comercio.id
+                }">
+                  <p><strong>💵 Aceita VR?:</strong> 
+                    <span id="formas-texto-${comercio.id}">
+                      ${
+                        comercio.formas_pagamento === true
+                          ? "Sim"
+                          : comercio.formas_pagamento === false
+                          ? "Não"
+                          : "a forma de pagamento não foi fornecido pelo proprietério"
+                      }
+                    </span>
+                  </p>
+                  <div class="btn-formas-pagamento">
+                    <button onclick="atualizarPagamento(${
+                      comercio.id
+                    }, true)" class="btn-sim">Sim</button>
+                    <button onclick="atualizarPagamento(${
+                      comercio.id
+                    }, false)" class="btn-nao">Não</button>
+                  </div>
+                </div>
+              `;
+            })()}
+            
+
+
+            ${socialLinksHtml}
+                  <button onclick="compartilharComercio(${
+                    comercio.id
+                  })" class="btn-compartilhar">
+           compartilhar
+           
+           </button>
+           <small style="font-size: 11px; color: #999; display: block; margin-top: 8px; text-align: center;">
+  Informações obtidas de fontes públicas e usuários. 
+</small>
+<small style="font-size: 11px; color: #999; display: block; text-align: center;">
+  É responsável por este local? 
+  <a href="https://forms.gle/6cqeckUSu5jhPuXUA" target="_blank" style="color: #007bff;">Atualize aqui</a>.
+</small>
+
+          </div>
+        </div>
+      `;
+
+      comercioList.appendChild(comercioItem);
+   // Comentando os anúncios temporariamente 👇
+// if ((index + 1) % 3 === 0) {
+//   const adsContainer = document.createElement("div");
+//   adsContainer.classList.add("adsense-container");
+
+//   adsContainer.innerHTML = `
+//     <ins class="adsbygoogle"
+//       style="display:block"
+//       data-ad-format="fluid"
+//       data-ad-layout-key="-fb+5w+4e-db+86"
+//       data-ad-client="ca-pub-1183660196592298"
+//       data-ad-slot="8158824480"></ins>
+//   `;
+
+//   comercioList.appendChild(adsContainer);
+
+//   try {
+//     (adsbygoogle = window.adsbygoogle || []).push({});
+//   } catch (e) {
+//     console.error("Erro ao carregar anúncio:", e);
+//   }
+// }
+      if (imagens.length > 1) {
+        const carrossel = comercioItem.querySelector(".carrossel");
+        const prevButton = carrossel.querySelector(".prev");
+        const nextButton = carrossel.querySelector(".next");
+
+        prevButton?.addEventListener("click", () => mudarImagem(carrossel, -1));
+        nextButton?.addEventListener("click", () => mudarImagem(carrossel, 1));
+
+        iniciarCarrossel(carrossel);
+      }
+    });
+  }
+
+  function mudarImagem(carrossel, direction) {
+    const imagens = carrossel.querySelectorAll(".comercio-imagem");
+    let activeIndex = Array.from(imagens).findIndex((img) =>
+      img.classList.contains("active")
+    );
+    imagens[activeIndex].classList.remove("active");
+
+    let newIndex = (activeIndex + direction + imagens.length) % imagens.length;
+    imagens[newIndex].classList.add("active");
+  }
+
+  function iniciarCarrossel(carrossel) {
+    setInterval(() => mudarImagem(carrossel, 1), 3000);
+  }
+
+  window.performSearch = function () {
+    const searchInput = document.getElementById("searchInput");
+    if (!searchInput || !window.allComercios) return;
+
+    // 1) Normaliza e quebra em tokens
+    const query = searchInput.value
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
+
+    if (query === ultimaBusca) return;
+    ultimaBusca = query;
+
+    // se query vazia, usa tudo
+    let results = allComercios;
+
+    if (query) {
+      const tokens = Array.from(new Set(query.split(/\s+/).filter((t) => t)));
+
+      results = allComercios.filter((comercio) => {
+        const campos = [
+          comercio.nome,
+          comercio.categoria,
+          comercio.endereco,
+          comercio.descricao,
+        ]
+          .filter(Boolean)
+          .map((c) =>
+            c
+              .toLowerCase()
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+          );
+
+        return tokens.every((token) =>
+          campos.some((campo) => campo.includes(token))
+        );
+      });
+    }
+
+    // 2) Ordena alfabeticamente por nome (sem acento, case-insensitive)
+    results.sort((a, b) => {
+      const na = a.nome
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+      const nb = b.nome
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+      return na.localeCompare(nb, "pt");
+    });
+
+    // 3) Renderiza e scroll
+    renderComercios(results);
+    const section = document.getElementById("comercio");
+    if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  searchInput.addEventListener("keyup", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); // impede comportamento padrão se necessário
+      window.performSearch();
+    }
+  });
+
+  // Dica extra: para garantir no mobile, pode também tratar "keydown"
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+    }
+  });
+
+  document.querySelectorAll(".category").forEach((category) => {
+    category.addEventListener("click", () => {
+      const categoriaSelecionada = category.getAttribute("data-category");
+      carregarComercios(categoriaSelecionada);
+
+      if (comercioSection) {
+        comercioSection.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+
+      const categoriaTexto = category.querySelector("h3")?.innerText;
+      if (categoriaTextoEl) {
+        categoriaTextoEl.innerText = `Comércios de ${categoriaTexto}`;
+      }
+    });
+  });
+  document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("searchInput");
+
+    if (searchInput) {
+      searchInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault(); // evita envio de formulário, se houver
+          performSearch();
+        }
+      });
+    }
+  });
+
+  carregarComercios();
+});
+
+// Funções globais
+window.toggleFavorite = function (comercioId) {
+  const icon = document.getElementById(`favorite-icon-${comercioId}`);
+  if (icon.classList.contains("fas")) {
+    icon.classList.remove("fas");
+    icon.classList.add("far");
+  } else {
+    icon.classList.remove("far");
+    icon.classList.add("fas");
+  }
+};
+
+window.toggleMenu = function (event) {
+  // Impede que o evento de clique no botão propague, evitando o fechamento do menu
+  event.stopPropagation();
+
+  // Alterna a classe 'show' para abrir/fechar o menu
+  document.getElementById("nav").classList.toggle("show");
+};
+
+// Fechar o menu ao clicar fora
+document.addEventListener("click", function (event) {
+  const nav = document.getElementById("nav");
+  const menuToggle = document.getElementById("menuToggle");
+
+  // Verifica se o menu está aberto e se o clique foi fora do menu e do botão de menu
+  if (
+    nav.classList.contains("show") &&
+    !nav.contains(event.target) &&
+    event.target !== menuToggle
+  ) {
+    nav.classList.remove("show");
+  }
+});
+// se der erro nas categorias descomentar essa função
+
+// window.scrollCategorias = function (direction) {
+//   const container = document.querySelector(".categories");
+//   const scrollAmount = 300;
+//   container.scrollBy({
+//     left: direction * scrollAmount,
+//     behavior: "smooth",
+//   });
+// };
+
+window.verMais = function (comercioId) {
+  const detalhes = document.getElementById(`detalhes-${comercioId}`);
+  const btn = document.querySelector(
+    `button[onclick="verMais(${comercioId})"]`
+  );
+
+  if (detalhes.style.display === "none" || detalhes.style.display === "") {
+    detalhes.style.display = "block";
+    if (btn) btn.textContent = "Ver menos";
+  } else {
+    detalhes.style.display = "none";
+    if (btn) btn.textContent = "Ver mais";
+  }
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  const popup = document.getElementById("privacyPopup");
+
+  if (getCookie("privacyAccepted") === "true") {
+    if (popup) popup.style.display = "none";
+
+    // Verifica se já mostramos a mensagem de boas-vindas
+    if (!getCookie("welcomeShown")) {
+      setCookie("welcomeShown", "true", 30);
+    }
+  } else {
+    if (popup) popup.style.display = "block"; // Exibe o pop-up
+  }
+});
+
+function setCookie(name, value, days) {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(
+    value
+  )}; expires=${expires}; path=/`;
+}
+
+function getCookie(name) {
+  const cookies = document.cookie.split("; ");
+  for (let cookie of cookies) {
+    const [key, value] = cookie.split("=");
+    if (key === name) return decodeURIComponent(value);
+  }
+  return null;
+}
+
+function acceptPrivacy() {
+  const checkbox = document.getElementById("privacyCheckbox");
+  const alertBox = document.getElementById("privacyAlert");
+  const popup = document.getElementById("privacyPopup");
+
+  if (!checkbox || !alertBox || !popup) return;
+
+  if (!checkbox.checked) {
+    alertBox.style.display = "block";
+    return;
+  }
+
+  alertBox.style.display = "none";
+  setCookie("privacyAccepted", "true", 30);
+  popup.style.display = "none";
+
+  // Mostrar o pop-up de boas-vindas
+  if (!getCookie("welcomeShown")) {
+    setCookie("welcomeShown", "true", 30);
+    document.getElementById("welcomePopup").style.display = "flex";
+  }
+}
+
+function closeWelcome() {
+  const welcome = document.getElementById("welcomePopup");
+  if (welcome) welcome.style.display = "none";
+}
+
+function openPopup() {
+  const popup = document.getElementById("privacyPopup");
+  popup.style.display = "flex"; // Exibir o popup corretamente
+}
+
+function closePopup() {
+  const popup = document.getElementById("privacyPopup");
+  popup.style.display = "none"; // Ocultar o popup
+}
+
+window.compartilharComercio = function (comercioId) {
+  const comercio = window.allComercios.find((c) => c.id === comercioId);
+  if (!comercio) return;
+
+  const texto = `${comercio.nome}\n${comercio.descricao || ""}\nVeja mais no Encontre!`;
+  const url = `${window.location.origin}/comercio.html?id=${comercioId}`;
+
+  if (navigator.share) {
+    navigator
+      .share({
+        title: comercio.nome,
+        text: texto,
+        url: url,
+      })
+      .then(() => {
+        console.log("Compartilhado com sucesso");
+      })
+      .catch((err) => {
+        console.error("Erro ao compartilhar:", err);
+      });
+  } else {
+    // Copia o link pro clipboard
+    navigator.clipboard.writeText(url).then(() => {
+      alert("Link copiado para a área de transferência!");
+    }).catch((err) => {
+      console.error("Erro ao copiar o link:", err);
+    });
+  }
+};
+
+function scrollCategorias(direction) {
+  const container = document.getElementById("categories");
+  const scrollAmount = 300; // pixels a rolar por clique
+
+  container.scrollBy({
+    left: direction * scrollAmount,
+    behavior: "smooth",
+  });
+}
+window.alternarHorario = function (comercioId) {
+  const comercio = window.allComercios.find((c) => c.id === comercioId);
+  if (!comercio) return;
+
+  const span = document.getElementById(`horario-texto-${comercioId}`);
+  const botao = document.getElementById(`btn-horario-${comercioId}`);
+
+  const completo = comercio.horario_funcionamento;
+  const reduzido = completo.slice(0, 40) + "...";
+
+  const estaExpandido = span.textContent === completo;
+
+  span.textContent = estaExpandido ? reduzido : completo;
+  botao.textContent = estaExpandido ? "Ver mais" : "Ver menos";
+};
+function filtrarPorCategoria(element) {
+  // Pega o valor da categoria selecionada
+  const categoriaSelecionada = element.getAttribute("data-category");
+
+  // Obtém todos os comércios (ou cards) que você quer filtrar
+  const comércios = document.querySelectorAll(".comercio");
+
+  // Para cada comércio, verifica se a categoria dele corresponde à categoria selecionada
+  comércios.forEach((comércio) => {
+    const categoriaComércio = comércio.getAttribute("data-category");
+
+    if (
+      categoriaSelecionada === "todos" ||
+      categoriaComércio === categoriaSelecionada
+    ) {
+      // Exibe o comércio caso ele pertença à categoria ou se a categoria "todos" for selecionada
+      comércio.style.display = "block";
+    } else {
+      // Esconde os outros comércios
+      comércio.style.display = "none";
+    }
+  });
+}
+
+function registrarClique(comercioId, linkTipo, comercioNome) {
+  // Criar o objeto de dados para enviar
+  const data = {
+    comercio_id: comercioId,
+    link: linkTipo,
+    comercio_nome: comercioNome,
+  };
+
+  // Enviar o clique para o backend usando fetch
+  fetch(`${window.ENV.API_URL}/api/cliques`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("Clique registrado com sucesso:", data);
+    })
+    .catch((error) => {
+      console.error("Erro ao registrar clique:", error);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btnVoltarAoInicio = document.getElementById("btnVoltarAoInicio");
+
+  if (btnVoltarAoInicio) {
+    window.addEventListener("scroll", () => {
+      btnVoltarAoInicio.style.display = window.scrollY > 0 ? "block" : "none";
+    });
+
+    btnVoltarAoInicio.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+});
+
+let autoScrollInterval;
+let inactivityTimeout;
+const container = document.querySelector(".botoes-uteis-container");
+const tolerance = 1; // Uma pequena tolerância em pixels
+
+function startHorizontalScroll() {
+  if (window.innerWidth >= 768) return;
+
+  autoScrollInterval = setInterval(() => {
+    if (
+      container.scrollLeft + container.clientWidth >=
+      container.scrollWidth - tolerance
+    ) {
+      container.scrollLeft = 0;
+    } else {
+      container.scrollBy({ left: 0.3, behavior: "smooth" }); // Ajustei um pouco a velocidade
+    }
+  }, 10); // Ajustei um pouco o intervalo
+}
+
+function stopHorizontalScroll() {
+  clearInterval(autoScrollInterval);
+}
+
+function resetInactivity() {
+  stopHorizontalScroll();
+  clearTimeout(inactivityTimeout);
+  inactivityTimeout = setTimeout(() => {
+    startHorizontalScroll();
+  }, 5000);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  startHorizontalScroll();
+
+  ["touchstart", "mousedown", "scroll", "wheel"].forEach((evt) => {
+    container.addEventListener(evt, resetInactivity, { passive: true });
+  });
+
+  container.querySelectorAll("button").forEach((btn) => {
+    btn.addEventListener("click", resetInactivity);
+  });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("btnComecar");
+  const popup = document.getElementById("welcomePopup");
+
+  if (btn && popup) {
+    btn.addEventListener("click", () => {
+      popup.style.display = "none";
+    });
+  }
+});
+function closeWelcome() {
+  const welcome = document.getElementById("welcomePopup");
+  if (welcome) welcome.style.display = "none";
+}
+
+// Espera o DOM carregar
+document.addEventListener("DOMContentLoaded", () => {
+  // Seleciona todos os elementos <a>
+  const allLinks = document.querySelectorAll("a[href]");
+
+  allLinks.forEach((link) => {
+    const href = link.getAttribute("href");
+
+    // Se começa com "http", "https" ou contém "//", assume que é link web (externo)
+    if (href.startsWith("http") || href.startsWith("//")) {
+      link.setAttribute("target", "_blank");
+      link.setAttribute("rel", "noopener noreferrer");
+    }
+  });
+});
+function mostrarInstrucaoIOS() {
+  Swal.fire({
+    title: "Como instalar o Encontre no iPhone?",
+    html: `
+      <ol style="text-align: left; padding-left: 20px; margin-top: 10px;">
+        <li>Abra o Safari e acesse este site (caso ainda não esteja nele).</li>
+        <li>Toque no botão <strong>compartilhar</strong> <span style="font-size: 1.2em;">📤</span>, localizado na barra inferior.</li>
+        <li>Deslize para cima se necessário e toque em <strong>"Adicionar à Tela de Início"</strong>.</li>
+        <li>Escolha um nome para o atalho, como <strong>Encontre</strong>, e toque em <strong>"Adicionar"</strong>.</li>
+      </ol>
+      <p style="margin-top: 10px;">Pronto! Agora o encontre aparecerá como um app na tela inicial do seu iPhone.</p>
+    `,
+    icon: "info",
+    confirmButtonText: "Entendi",
+    confirmButtonColor: "#007aff",
+  });
+}
+// Função para mostrar o banner com atraso
+window.addEventListener("DOMContentLoaded", () => {
+  const banner = document.getElementById("bannerApp");
+  const lastShown = localStorage.getItem("bannerLastShown");
+
+  // Se o banner foi exibido recentemente, não mostrar de novo
+  if (
+    !lastShown ||
+    new Date() - new Date(lastShown) > 3 * 24 * 60 * 60 * 1000
+  ) {
+    setTimeout(() => {
+      banner.classList.add("show");
+
+      // Depois de 8 segundos, some com suavidade
+      setTimeout(() => {
+        banner.classList.remove("show");
+        banner.classList.add("hide");
+
+        // Atualiza a data da última exibição no localStorage
+        localStorage.setItem("bannerLastShown", new Date().toString());
+      }, 8000);
+    }, 1000); // aparece após 1s
+  }
+});
+window.atualizarPagamento = (function () {
+  let debounceTimers = {};
+
+  return async function (id, valor) {
+    const lastUpdateKey = `lastUpdate-${id}`;
+    const lastCacheTimeKey = `lastCache-${id}`;
+    const now = Date.now();
+
+    const textoEl = document.getElementById(`formas-texto-${id}`);
+    if (!textoEl) return;
+
+    // Verificar o estado atual
+    const estadoAtual = textoEl.textContent.trim() === "Sim";
+
+    // Se o valor atual já é igual ao que o usuário quer definir, impede a ação
+    if (estadoAtual === valor) {
+      Swal.fire({
+        title: "Nada a mudar",
+        text: `O status já está como "${valor ? "Sim" : "Não"}".`,
+        icon: "info",
+        confirmButtonText: "Ok",
+      });
+      return;
+    }
+
+    const lastUpdateTime = Number(localStorage.getItem(lastUpdateKey));
+    const lastCacheTime = Number(localStorage.getItem(lastCacheTimeKey));
+
+    // Verificar se já passou 24 horas desde a última atualização
+    if (lastUpdateTime && now - lastUpdateTime < 24 * 60 * 60 * 1000) {
+      const remainingTime = 24 * 60 * 60 * 1000 - (now - lastUpdateTime);
+      const remainingHours = Math.floor(remainingTime / (1000 * 60 * 60));
+      const remainingMinutes = Math.floor(
+        (remainingTime % (1000 * 60 * 60)) / (1000 * 60)
+      );
+
+      Swal.fire({
+        title: "Aguarde",
+        text: `Você já atualizou este comércio recentemente. Tente novamente em ${remainingHours} horas e ${remainingMinutes} minutos.`,
+        icon: "info",
+        confirmButtonText: "Ok",
+      });
+      return;
+    }
+
+    // Cache expirado após 1 hora
+    const cacheExpiration = 60 * 60 * 1000; // 1 hora
+    if (lastCacheTime && now - lastCacheTime < cacheExpiration) {
+      textoEl.textContent = valor ? "Sim" : "Não";
+      return;
+    }
+
+    // Se houver um timer de debounce para esse ID, limpar
+    if (debounceTimers[id]) {
+      clearTimeout(debounceTimers[id]);
+    }
+
+    debounceTimers[id] = setTimeout(async function () {
+      try {
+        const response = await fetch(
+          `${window.ENV.API_URL}/comercios/${id}/formas_pagamento`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ formas_pagamento: valor }),
+          }
+        );
+
+        if (!response.ok) throw new Error("Erro ao atualizar");
+
+        // Atualiza o texto na interface
+        textoEl.textContent = valor ? "Sim" : "Não";
+
+        // Atualiza os registros no localStorage
+        localStorage.setItem(lastUpdateKey, now.toString());
+        localStorage.setItem(lastCacheTimeKey, now.toString());
+
+        Swal.fire({
+          title: "Sucesso!",
+          text: "Formas de pagamento atualizadas com sucesso.",
+          icon: "success",
+          confirmButtonText: "Ok",
+        });
+      } catch (error) {
+        console.error("Erro ao atualizar formas de pagamento:", error);
+
+        // Reverte a mudança
+        textoEl.textContent = textoEl.textContent === "Sim" ? "Não" : "Sim";
+
+        Swal.fire({
+          title: "Erro",
+          text: "Não foi possível atualizar. Tente novamente.",
+          icon: "error",
+          confirmButtonText: "Fechar",
+        });
+      }
+    }, 500);
+  };
+})();
+function abrirWhatsapp(telefone, id, nome) {
+  if (!telefone) {
+    Swal.fire({
+      icon: "warning",
+      title: "Telefone não disponível",
+      text: "Este comércio ainda não cadastrou um telefone.",
+    });
+    return;
+  }
+
+  const numeroLimpo = telefone.replace(/\D/g, "");
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  // Monta o HTML dos botões
+  let htmlContent = `
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <button id="btn-web" class="swal2-confirm swal2-styled" style="width: 100%;">WhatsApp</button>
+      ${!isMobile ? `<button id="btn-phone" class="swal2-deny swal2-styled" style="width: 100%;">Telefone</button>` : ""}
+    </div>
+  `;
+
+  Swal.fire({
+    title: "Como deseja abrir o WhatsApp?",
+    icon: "info",
+    html: htmlContent,
+    showCancelButton: true,
+    showConfirmButton: false,
+    cancelButtonText: "Cancelar",
+    didOpen: () => {
+      // Whatsapp Web
+      document.getElementById("btn-web").addEventListener("click", () => {
+        window.open(`https://wa.me/${numeroLimpo}`, "_blank");
+        registrarClique(id, "whatsapp_web", nome);
+        Swal.close();
+      });
+
+      // Telefone (só em desktop)
+      if (!isMobile) {
+        document.getElementById("btn-phone").addEventListener("click", () => {
+          window.location.href = `tel:${numeroLimpo}`;
+          registrarClique(id, "whatsapp_celular", nome);
+          Swal.close();
+        });
+      }
+    }
+  });
+}
+const searchInput = document.getElementById("searchInput");
+
+const phrases = [
+  "Com fome? Digite pizzarias",
+  "Bora um café? Digite cafeterias",
+  "Vai às compras? Digite mercados",
+  "Quer um lanche? Digite lanchonetes",
+  "Digite o nome de um lugar!",
+];
+
+let currentPhrase = 0;
+let currentChar = 0;
+let isDeleting = false;
+
+function typeEffect() {
+  const currentText = phrases[currentPhrase];
+  let displayedText = currentText.substring(0, currentChar);
+  searchInput.placeholder = displayedText;
+
+  if (!isDeleting) {
+    currentChar++;
+    if (currentChar > currentText.length) {
+      isDeleting = true;
+      setTimeout(typeEffect, 1000); // pausa antes de apagar
+      return;
+    }
+  } else {
+    currentChar--;
+    if (currentChar === 0) {
+      isDeleting = false;
+      currentPhrase = (currentPhrase + 1) % phrases.length;
+    }
+  }
+
+  setTimeout(typeEffect, isDeleting ? 50 : 100);
+}
+
+typeEffect(); // chama a função assim que carregar
